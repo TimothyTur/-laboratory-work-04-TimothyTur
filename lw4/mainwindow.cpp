@@ -4,18 +4,25 @@
 #include <QMenuBar>
 #include <QCoreApplication>
 #include <QContextMenuEvent>
+#include <QRandomGenerator>
+
+#include <iostream>
 
 //public:
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+    , selected(0)
 {
     setFixedSize(800, 623);
 
-    _MainMenu = menuBar()->addMenu(tr("&File"));
-    _ActionQuit = _MainMenu->addAction(tr("&Quit"),
-                                       QCoreApplication::instance(),
-                                       SLOT(quit()));
-
+    _ActionFigure1 = menuBar()->addAction(tr("&Figure 1"),
+                                          this, SLOT(select1()));
+    _ActionFigure2 = menuBar()->addAction(tr("&Figure 2"),
+                                          this, SLOT(select2()));
+    _ActionCreate = menuBar()->addAction(tr("&Create"),
+                                          this, SLOT(create()));
+    _ActionDelete = menuBar()->addAction(tr("&Delete"),
+                                          this, SLOT(delSelected()));
 
 
     Figure1* f1 = new Figure1(this);
@@ -46,9 +53,14 @@ MainWindow::MainWindow(QWidget *parent)
     figures.push_back(f7);
     figures.push_back(f8);
     figures.push_back(f9);
-    for(size_t i=0; i<figures.size(); ++i)
+    for(size_t i=0; i<figures.size(); ++i) {
         connect(figures[i], SIGNAL(selectedSgn(Figure*)),
                 this, SLOT(deselect(Figure*)));
+        connect(figures[i], SIGNAL(moveSgn(Figure*,int,int)),
+                this, SLOT(moveFigure(Figure*,int,int)));
+        connect(figures[i], SIGNAL(delSgn(Figure*)),
+                this, SLOT(delSingle(Figure*)));
+    }
 }
 
 MainWindow::~MainWindow() {}
@@ -56,31 +68,86 @@ MainWindow::~MainWindow() {}
 //protected:
 void MainWindow::contextMenuEvent(QContextMenuEvent* event) {
     //additional:
-    //else
     //    show BackgroundMenu
-    _MainMenu->exec(event->globalPos());
 }
 
-void MainWindow::mousePressEvent(QMouseEvent* event) {                         //!!!
+void MainWindow::mousePressEvent(QMouseEvent* event) {
     deselect(nullptr);
 }
 
-//void MainWindow::mouseReleaseEvent(QMouseEvent* e) {                     //!!!
-//}
-
 //private slots:
-void MainWindow::deselect(Figure* figure) {                                          //!!!
+void MainWindow::deselect(Figure* figure) {
     for(size_t i=0; i<figures.size(); ++i) {
         if(figures[i]!=figure)
             figures[i]->deselect();
     }
     update();
 }
-
-void MainWindow::deleteFigure() {                                          //!!!
-    //delete selected
+void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
+    if(figure->isSelected()) {
+        int x = figure->geometry().left(),
+            y = figure->geometry().top(),
+            w = figure->geometry().right() - x,
+            h = figure->geometry().bottom() - y;
+        x += dx; y += dy;
+        if(x<0)
+            x = 0;
+        else if(x+w>800)
+            x = 800-w;
+        if(y<20)
+            y = 20;
+        else if(y+h>623)
+            y = 623-h;
+        figure->move(x, y);
+    }
 }
-
-void MainWindow::showFigureChange() {                                      //!!!
-    //on selected figure
+void MainWindow::select1() {
+    _ActionFigure1->setEnabled(false);
+    _ActionFigure2->setEnabled(true);
+    selected = 1;
+}
+void MainWindow::select2() {
+    _ActionFigure1->setEnabled(true);
+    _ActionFigure2->setEnabled(false);
+    selected = 2;
+}
+void MainWindow::create() {
+    //Figure* f;
+    if(selected==1) {
+        Figure1* f = new Figure1(this);
+        int w = QRandomGenerator::global()->bounded(600),
+            h = QRandomGenerator::global()->bounded(400);
+        std::cout << (selected+10) << ' ' << f << ' ' << w << ' ' << h << '\n';
+        f->move(w, h);
+        connect(f, SIGNAL(selectedSgn(Figure*)),
+                this, SLOT(deselect(Figure*)));
+        figures.push_back(f);
+    }
+    else if(selected==2) {
+        Figure2* f = new Figure2(this);
+        int w = QRandomGenerator::global()->bounded(600),
+            h = QRandomGenerator::global()->bounded(400);
+        std::cout << (selected+10) << ' ' << f << ' ' << w << ' ' << h << '\n';
+        f->move(w, h);
+        connect(f, SIGNAL(selectedSgn(Figure*)),
+                this, SLOT(deselect(Figure*)));
+        figures.push_back(f);
+    }
+    update();
+}
+void MainWindow::delSingle(Figure* figure) {
+    int i = figures.indexOf(figure);
+    delete figures[i];
+    figures[i] = nullptr;
+    figures.remove(i);
+}
+void MainWindow::delSelected() {
+    for(int i=0; i<figures.size(); ++i) {
+        if(figures[i]->isSelected()) {
+            delete figures[i];
+            figures[i] = nullptr;
+            figures.remove(i);
+        }
+    }
+    update();
 }

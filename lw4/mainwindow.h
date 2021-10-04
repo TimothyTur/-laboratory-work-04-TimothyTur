@@ -25,24 +25,26 @@ public:
 protected:
     void contextMenuEvent(QContextMenuEvent* e);
     void mousePressEvent(QMouseEvent* e);
-    //void mouseReleaseEvent(QMouseEvent* e);
 
 private slots:
     void deselect(Figure* figure);
-    void deleteFigure();
-    void showFigureChange();
+    void moveFigure(Figure* figure, int dx, int dy);
+    void select1();
+    void select2();
+    void create();
+    void delSingle(Figure*);
+    void delSelected();
 
 private:
-    QMenu* _MainMenu; // figure 1 ; figure 2 ; create ;
-    //f1 and f2 are holding, none at start, only one can be holded
-    //create - create figure of choosen form (none of not selected)
-    //random place and rotation
-    QAction* _ActionQuit;
+    QAction* _ActionFigure1;
+    QAction* _ActionFigure2;
+    QAction* _ActionCreate;
+    QAction* _ActionDelete;
+
     //QMenu* _BackgroundMenu; //additional
-
     //QMenu* _FigureMenu; // хрень реализации, но так заметно проще
-
     QVector<Figure*> figures;
+    char selected;
 
 
 

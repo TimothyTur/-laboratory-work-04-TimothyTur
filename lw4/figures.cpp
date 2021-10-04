@@ -198,10 +198,14 @@ Figure::Figure(QWidget *parent)
 
     _EditDialog = new EditDialog(w, h, a, b, c, d, e, f, this);
     connect(_EditDialog, SIGNAL(accepted()), this, SLOT(figureChanged()));
+    update();
 }
 
 void Figure::deselect() {
     selected = false;
+}
+bool Figure::isSelected() {
+    return selected;
 }
 
 //protected:
@@ -210,14 +214,22 @@ void Figure::contextMenuEvent(QContextMenuEvent* e) {
     _FigureMenu->exec(e->globalPos());
 }
 
-void Figure::mousePressEvent(QMouseEvent* e) {                             //!!!
+void Figure::mousePressEvent(QMouseEvent* e) {
     selected = true;
     emit selectedSgn(this);
+    if(e->button()==Qt::LeftButton) {
+        emit moveSgn(this, e->pos().x()-w/2, e->pos().y()-h/2);
+    }
+    update();
+}
+void Figure::mouseMoveEvent(QMouseEvent* e) {
+    emit moveSgn(this, e->pos().x()-w/2, e->pos().y()-h/2);
     update();
 }
 
 //private slots:
-void Figure::deleteFigure() {                                              //!!!
+void Figure::deleteFigure() {
+    emit delSgn(this);
 }
 
 void Figure::showFigureEdit() {

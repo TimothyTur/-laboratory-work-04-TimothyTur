@@ -56,11 +56,13 @@ public:
     explicit Figure(QWidget *parent = nullptr);
 
     void deselect();
+    bool isSelected();
 
 protected:
     //void paintEvent(QPaintEvent* e); // на перегрузки
     void contextMenuEvent(QContextMenuEvent* e);
     void mousePressEvent(QMouseEvent* e);
+    void mouseMoveEvent(QMouseEvent* e);
 
     int w, h,
         a, b, c, d, e, f;
@@ -79,6 +81,8 @@ private:
 
 signals:
     void selectedSgn(Figure*);
+    void moveSgn(Figure*, int, int);
+    void delSgn(Figure*);
 };
 
 // фигура 55: A3B3C2D3EF6
