@@ -5,8 +5,16 @@
 #include <QRandomGenerator>
 #include <QGridLayout>
 #include <QPushButton>
+#include <QtMath>
 
 #include <iostream>
+
+template<typename T>
+T abs(T val) {
+    if(val<0)
+        return -val;
+    return val;
+}
 
 // EditDialog
 //public:
@@ -173,6 +181,41 @@ void EditDialog::fValueChanged(int val) {
     f = val;
 }
 
+//RotateDialog
+RotateDialog::RotateDialog(int& fi, QWidget* parent)
+    : QDialog(parent)
+{
+    setModal(true);
+    setFixedSize(200, 200);
+    setWindowTitle(tr("Rotate Figure"));
+
+    fiDial = new QDial(this);
+    fiDial->setFocusPolicy(Qt::StrongFocus);
+    fiDial->setRange(-180, 180);
+    fiDial->setSingleStep(1);
+    fiDial->setValue(fi);
+    fiDial->setFixedSize(100, 100);
+
+    fiLabel = new QLabel(tr("&Degree"));
+    fiLabel->setBuddy(fiDial);
+
+    acceptButton = new QPushButton(tr("&Accept"), this);
+    connect(acceptButton, SIGNAL(clicked()),
+            this,         SLOT(accept()));
+
+    QGridLayout* layout = new QGridLayout;
+    layout->addWidget(fiLabel, 0, 0, Qt::AlignCenter);
+    layout->addWidget(fiDial, 1, 0);
+    layout->addWidget(acceptButton, 2, 0);
+    setLayout(layout);
+
+}
+
+//private slots:
+void RotateDialog::fiValueChanged(int val) {
+
+}
+
 // Figure
 //public:
 Figure::Figure(QWidget *parent)
@@ -185,9 +228,14 @@ Figure::Figure(QWidget *parent)
     , d(QRandomGenerator::global()->bounded(0, h/3))
     , e(QRandomGenerator::global()->bounded(0, w/4))
     , f(QRandomGenerator::global()->bounded(0, w/4))
+    , fi(QRandomGenerator::global()->bounded(-180, 180))
     , selected(false)
+    , lmHolds(false)
 {
-    setFixedSize(w+1, h+1);
+    setFixedSize((w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+                 (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi)))),
+                 (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+                 (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi)))));
     _FigureMenu = new QMenu(this);
     _ActionFigureDelete = _FigureMenu->addAction(tr("Delete"),
                                                  this,
@@ -195,9 +243,16 @@ Figure::Figure(QWidget *parent)
     _ActionFigureEdit = _FigureMenu->addAction(tr("Edit"),
                                                  this,
                                                  SLOT(showFigureEdit()));
-
+    _ActionFigureMove = _FigureMenu->addAction(tr("Move"),
+                                               this,
+                                               SLOT(startMoving()));
+    _ActionFigureRotate = _FigureMenu->addAction(tr("Rotate"),
+                                                 this,
+                                                 SLOT(showFigureRotate()));
     _EditDialog = new EditDialog(w, h, a, b, c, d, e, f, this);
     connect(_EditDialog, SIGNAL(accepted()), this, SLOT(figureChanged()));
+    _RotateDialog = new RotateDialog(fi, this);
+    //connect(_RotateDialog, SIGNAL(accepted()), this, SLOT(fiChanged()));
     update();
 }
 
@@ -218,13 +273,21 @@ void Figure::mousePressEvent(QMouseEvent* e) {
     selected = true;
     emit selectedSgn(this);
     if(e->button()==Qt::LeftButton) {
+        lmHolds = true;
         emit moveSgn(this, e->pos().x()-w/2, e->pos().y()-h/2);
     }
     update();
 }
 void Figure::mouseMoveEvent(QMouseEvent* e) {
-    emit moveSgn(this, e->pos().x()-w/2, e->pos().y()-h/2);
+    if(hasMouseTracking())
+        emit moveSgn(this, e->pos().x()-w/2, e->pos().y()-h/2);
+    else if(lmHolds)
+        emit moveSgn(this, e->pos().x()-w/2, e->pos().y()-h/2);
     update();
+}
+void Figure::mouseReleaseEvent(QMouseEvent* e) {
+    if(e->button()==Qt::LeftButton)
+        lmHolds = false;
 }
 
 //private slots:
@@ -245,8 +308,29 @@ void Figure::figureChanged() {
     d = _EditDialog->getd();
     e = _EditDialog->gete();
     f = _EditDialog->getf();
-    setFixedSize(w+1, h+1);
+    setFixedSize((w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+                 (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi)))),
+                 (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+                 (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi)))));
     update();
+}
+void Figure::fiChanged() {
+
+}
+void Figure::startMoving() {
+
+    emit
+    if(hasMouseTracking()) {
+        setMouseTracking(false);
+    }
+    else {
+        setMouseTracking(true);
+        QPoint p = this->mapFromGlobal(QCursor::pos());
+        emit moveSgn(this, p.x()-w/2, p.y()-h/2);
+    }
+}
+void Figure::showFigureRotate() {
+    _RotateDialog->exec();
 }
 
 // Figure1
@@ -259,6 +343,7 @@ void Figure1::paintEvent(QPaintEvent* e) {
     else
         painter.setPen(Qt::black);
 
+    painter.rotate(fi);
     painter.drawArc(w-a, -a, 2*a, 2*a, 180*16, 90*16); // A
     painter.drawLine(w, a, w, h-b);
     painter.drawArc(w-b, h-b, 2*b, 2*b, 90*16, 90*16); // B
@@ -281,6 +366,7 @@ void Figure2::paintEvent(QPaintEvent* event) {
     else
         painter.setPen(Qt::black);
 
+    painter.rotate(fi);
     painter.drawLine(w, 0, w, h-b);                   // A
     painter.drawLine(w,    h-b, w-b, h-b);            // B
     painter.drawLine(w-b, h-b, w-b, h   );            // B

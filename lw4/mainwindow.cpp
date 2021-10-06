@@ -72,7 +72,8 @@ void MainWindow::contextMenuEvent(QContextMenuEvent* event) {
 }
 
 void MainWindow::mousePressEvent(QMouseEvent* event) {
-    deselect(nullptr);
+    if(event->button() == Qt::LeftButton)
+        deselect(nullptr);
 }
 
 //private slots:

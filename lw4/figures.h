@@ -6,6 +6,7 @@
 #include <QDialog>
 #include <QLabel>
 #include <QSpinBox>
+#include <QDial>
 
 class EditDialog : public QDialog
 {
@@ -48,6 +49,25 @@ private: // ыы
     QPushButton* acceptButton;
 };
 
+class RotateDialog : public QDialog
+{
+    Q_OBJECT
+public:
+    RotateDialog(int& fi, QWidget* parent = nullptr);
+
+    int getFi();
+
+private slots:
+    void fiValueChanged(int val);
+
+private:
+    QLabel* fiLabel;
+    QDial* fiDial;
+    QPushButton* acceptButton;
+
+signals:
+    void fiChanged(int fi);
+};
 
 class Figure : public QWidget
 {
@@ -57,27 +77,37 @@ public:
 
     void deselect();
     bool isSelected();
+    int getFi();
 
 protected:
     //void paintEvent(QPaintEvent* e); // на перегрузки
     void contextMenuEvent(QContextMenuEvent* e);
     void mousePressEvent(QMouseEvent* e);
+    void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
 
     int w, h,
-        a, b, c, d, e, f;
+        a, b, c, d, e, f,
+        fi;
     bool selected;
 
 private slots:
     void deleteFigure();
     void showFigureEdit();
     void figureChanged();
+    void fiChanged();
+    void startMoving();
+    void showFigureRotate();
 
 private:
     QMenu* _FigureMenu;
     QAction* _ActionFigureDelete;
     QAction* _ActionFigureEdit;
+    QAction* _ActionFigureMove;
+    QAction* _ActionFigureRotate;
     EditDialog* _EditDialog;
+    RotateDialog* _RotateDialog;
+    bool lmHolds;
 
 signals:
     void selectedSgn(Figure*);
