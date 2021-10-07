@@ -58,7 +58,7 @@ public:
     int getFi();
 
 private slots:
-    void fiValueChanged(int val);
+    void fiChanged(int);
 
 private:
     QLabel* fiLabel;
@@ -66,7 +66,7 @@ private:
     QPushButton* acceptButton;
 
 signals:
-    void fiChanged(int fi);
+    void fiChangedSgn(int fi);
 };
 
 class Figure : public QWidget
@@ -81,8 +81,8 @@ public:
 
 protected:
     //void paintEvent(QPaintEvent* e); // на перегрузки
-    void contextMenuEvent(QContextMenuEvent* e);
-    void mousePressEvent(QMouseEvent* e);
+    //void contextMenuEvent(QContextMenuEvent* e); // на перегрузки
+    //void mousePressEvent(QMouseEvent* e); // на перегрузки
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
 
@@ -90,30 +90,36 @@ protected:
         a, b, c, d, e, f,
         fi;
     bool selected;
+    bool lmHolds;
+    QMenu* _FigureMenu;
+
+    int dx, dy;
 
 private slots:
     void deleteFigure();
     void showFigureEdit();
     void figureChanged();
-    void fiChanged();
+    void fiChanged(int val);
     void startMoving();
     void showFigureRotate();
 
 private:
-    QMenu* _FigureMenu;
     QAction* _ActionFigureDelete;
     QAction* _ActionFigureEdit;
     QAction* _ActionFigureMove;
     QAction* _ActionFigureRotate;
     EditDialog* _EditDialog;
     RotateDialog* _RotateDialog;
-    bool lmHolds;
 
 signals:
     void selectedSgn(Figure*);
     void moveSgn(Figure*, int, int);
     void delSgn(Figure*);
+    void contextMenuSgn(QContextMenuEvent*);
+    void mousePressSgn(QMouseEvent*);
 };
+
+class Figure2;
 
 // фигура 55: A3B3C2D3EF6
 class Figure1 : public Figure
@@ -124,6 +130,16 @@ public:
 
 protected:
     void paintEvent(QPaintEvent* event);
+    void contextMenuEvent(QContextMenuEvent* e);
+    void mousePressEvent(QMouseEvent* e);
+
+    bool collidingWithBox(QPoint p);
+    bool collidingWithBox(int x, int y);
+    bool collidingWith(QPoint p);
+    bool collidingWith(int x, int y);
+    bool collidingWith(Figure1*);
+    bool collidingWith(Figure2*);
+
 };
 
 // фигура 60: AB1C3D4E5F5
@@ -135,6 +151,15 @@ public:
 
 protected:
     void paintEvent(QPaintEvent* event);
+    void contextMenuEvent(QContextMenuEvent* e);
+    void mousePressEvent(QMouseEvent* e);
+
+    bool collidingWithBox(QPoint p);
+    bool collidingWithBox(int x, int y);
+    bool collidingWith(QPoint p);
+    bool collidingWith(int x, int y);
+    bool collidingWith(Figure1*);
+    bool collidingWith(Figure2*);
 };
 
 #endif // FIGURES_H
