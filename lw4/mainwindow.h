@@ -25,6 +25,7 @@ public:
 protected:
     void contextMenuEvent(QContextMenuEvent* e);
     void mousePressEvent(QMouseEvent* e);
+    void mouseMoveEvent(QMouseEvent* e);
 
 private slots:
     void deselect(Figure* figure);
@@ -45,6 +46,7 @@ private:
     //QMenu* _FigureMenu; // хрень реализации, но так заметно проще
     QVector<Figure*> figures;
     char selected;
+    int toolbarH;
 
 
 
