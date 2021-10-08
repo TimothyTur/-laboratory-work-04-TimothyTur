@@ -12,10 +12,10 @@ class EditDialog : public QDialog
 {
     Q_OBJECT
 public:
-    EditDialog(int, int, int, int, int, int, int, int,
+    EditDialog(int, int, int, int, int, int, int, int, int, bool,
                QWidget *parent = nullptr);
 
-    int getw(), geth(), geta(), getb(), getc(), getd(), gete(), getf();
+    int getw(), geth(), geta(), getb(), getc(), getd(), gete(), getf(), getfi();
 
 private slots:
     void wValueChanged(int val);
@@ -26,10 +26,14 @@ private slots:
     void dValueChanged(int val);
     void eValueChanged(int val);
     void fValueChanged(int val);
+    void fiValueChanged(int val);
 
 private: // ыы
     int w, h,
-        a, b, c, d, e, f;
+        a, b, c, d, e, f,
+        fi;
+    double S, P;
+    bool figureType; // 0 -> 1, 1 -> 2.
     QLabel* wLabel;
     QLabel* hLabel;
     QLabel* aLabel;
@@ -38,6 +42,9 @@ private: // ыы
     QLabel* dLabel;
     QLabel* eLabel;
     QLabel* fLabel;
+    QLabel* fiLabel;
+    QLabel* SLabel;
+    QLabel* PLabel;
     QSpinBox* wSpinBox;
     QSpinBox* hSpinBox;
     QSpinBox* aSpinBox;
@@ -46,6 +53,7 @@ private: // ыы
     QSpinBox* dSpinBox;
     QSpinBox* eSpinBox;
     QSpinBox* fSpinBox;
+    QSpinBox* fiSpinBox;
     QPushButton* acceptButton;
 };
 
@@ -92,6 +100,8 @@ protected:
     bool selected;
     bool lmHolds;
     QMenu* _FigureMenu;
+    EditDialog* _EditDialog;
+    RotateDialog* _RotateDialog;
 
     //int dx, dy;
 
@@ -108,8 +118,6 @@ private:
     QAction* _ActionFigureEdit;
     QAction* _ActionFigureMove;
     QAction* _ActionFigureRotate;
-    EditDialog* _EditDialog;
-    RotateDialog* _RotateDialog;
 
 signals:
     void selectedSgn(Figure*);

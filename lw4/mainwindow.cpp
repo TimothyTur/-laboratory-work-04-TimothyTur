@@ -25,33 +25,34 @@ MainWindow::MainWindow(QWidget *parent)
     toolbarH = menuBar()->height();
     setFixedSize(800, 622);
 
-    //Figure1* f1 = new Figure1(this);
-    //f1->move(25, 23); // +225, +180
-    Figure2* f2 = new Figure2(this);
+    /*
+    Figure1* f1 = new Figure1(this);
+    f1->move(25, 23); // +225, +180
+    Figure1* f2 = new Figure1(this);
     f2->move(250, 23);
-    //Figure1* f3 = new Figure1(this);
-    //f3->move(475, 23);
-    Figure2* f4 = new Figure2(this);
+    Figure1* f3 = new Figure1(this);
+    f3->move(475, 23);
+    Figure1* f4 = new Figure1(this);
     f4->move(25, 205);
     //f5
     Figure2* f6 = new Figure2(this);
     f6->move(475, 205);
-    //Figure2* f7 = new Figure2(this);
-    //f7->move(25, 385);
+    Figure2* f7 = new Figure2(this);
+    f7->move(25, 385);
     Figure2* f8 = new Figure2(this);
     f8->move(250, 385);
-    //Figure2* f9 = new Figure2(this);
-    //f9->move(475, 385);
+    Figure2* f9 = new Figure2(this);
+    f9->move(475, 385);
 
-    //figures.push_back(f1);
+    figures.push_back(f1);
     figures.push_back(f2);
-    //figures.push_back(f3);
+    figures.push_back(f3);
     figures.push_back(f4);
     //figures.push_back(f5);
     figures.push_back(f6);
-    //figures.push_back(f7);
+    figures.push_back(f7);
     figures.push_back(f8);
-    //figures.push_back(f9);
+    figures.push_back(f9);
     for(size_t i=0; i<figures.size(); ++i) {
         connect(figures[i], SIGNAL(selectedSgn(Figure*)),
                 this, SLOT(deselect(Figure*)));
@@ -60,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent)
         connect(figures[i], SIGNAL(delSgn(Figure*)),
                 this, SLOT(delSingle(Figure*)));
     }
+    */
 }
 
 MainWindow::~MainWindow() {}
