@@ -93,7 +93,7 @@ protected:
     bool lmHolds;
     QMenu* _FigureMenu;
 
-    int dx, dy;
+    //int dx, dy;
 
 private slots:
     void deleteFigure();

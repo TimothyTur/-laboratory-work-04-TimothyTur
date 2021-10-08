@@ -147,7 +147,7 @@ void EditDialog::wValueChanged(int val) {
 }
 void EditDialog::hValueChanged(int val) {
     h = val;
-    if(h>=w/3 and h<w) {
+    if(h>=w/3 and h<=w) {
         if(a>=h/3)
             aSpinBox->setValue(h/3-1);
         if(b>=h/3)
@@ -489,7 +489,7 @@ void Figure2::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
     // для тестов
     painter.setPen(Qt::red);
-    painter.drawEllipse(dx, dy, 2, 2); // это был клик по фигуре в 0
+    //painter.drawEllipse(dx, dy, 2, 2); // это был клик по фигуре в 0
     painter.drawLine(w, 0, w, h-b);                   // A
     painter.drawLine(w,    h-b, w-b, h-b);            // B
     painter.drawLine(w-b, h-b, w-b, h   );            // B
@@ -587,14 +587,21 @@ bool Figure2::collidingWithBox(int x, int y) {
 
     }
     else if(fi==-90) {
-        //y -= w;
-        //int t = x;
-        //x = -y;
-        //y = t;
         return collidingWith(-y+w, x);
     }
     else if(fi>-90 and fi<0) {
-
+        float radfi = qDegreesToRadians(static_cast<float>(fi));
+        float k = qTan(radfi);
+        //if(y<x*k-h*qSin(radfi)*k or //y1
+        //   y>-x/k+w*qSin(radfi)+(h*qSin(radfi)+w*qCos(radfi))/k or //y2
+        //   y>x*k+h*qCos(radfi) or //y3
+        //  y<-x/k+h*qCos(radfi)) //y4
+        std::cout << k << ' '  << (-h*qSin(fi)+w*qCos(fi))*k << '\n';
+        if(y<x*k-w*qSin(radfi) or //y1
+           y<-x/k+w*qCos(radfi)/k or //y2
+           y>x*k+h*qCos(fi)-(w*qCos(fi)-h*qSin(fi))*k)              // <-here!!!
+            return false;
+        return true;
     }
     else if(fi==0) {
         return collidingWith(x, y);
@@ -610,42 +617,22 @@ bool Figure2::collidingWithBox(int x, int y) {
         x -= h*qSin(radfi);
         return collidingWith(x*qCos(radfi)+y*qSin(radfi),
                              -x*qSin(radfi)+y*qCos(radfi));
-
-        // y1 = x*k-h*qSin(radfi)*k
-        // y2 = -x/k+w*qSin(radfi)+(h*qSin(radfi)+w*qCos(radfi))/k
-        // y3 = x*k+h*qCos(radfi)
-        // y4 = -x/k+h*qCos(radfi)
     }
     else if(fi==90) {
-        //x -= h;
-        //int t = x;
-        //x = y;
-        //y = -t;
         return collidingWith(y, -x+h);
     }
     else if(fi>90 and fi<180) {
         float radfi = qDegreesToRadians(static_cast<float>(fi));
         float k = qTan(radfi);
-        //if(y>x*k-h*qCos(radfi)-(h*qSin(radfi)-w*qCos(radfi))*k or //y1
-        //   y>-x/k+w*qSin(radfi) or //y2
-        //   y<x*k+w*qSin(radfi) or //y3
-        //   y<-x/k+w*qSin(radfi)/k) //y4
-        if(y<-x/k+w*qCos(radfi)/k)
+        if(y>x*k-h*qCos(radfi)-(h*qSin(radfi)-w*qCos(radfi))*k or //y1
+           y>-x/k+w*qSin(radfi) or //y2
+           y<x*k+w*qSin(radfi) or //y3
+           y<-x/k-w*qCos(radfi)/k) //y4
             return false;
-        /*
-        std::cout << w << ' ' << h << ' ' << radfi << ' ' << k << " | "
-                  << x << ' ' << y << " | ";
-        dx = x; dy = y;
-        dx -= h*qSin(radfi)-w*qCos(radfi);
-        dy -= -h*qCos(radfi);
-        std::cout << dx << ' ' << dy << " | ";
-        dx = dx*qCos(radfi)+dy*qSin(radfi);
-        dy = dx*qSin(radfi)-dy*qCos(radfi);
-        std::cout << dx << ' ' << dy << '\n';
-        return collidingWith(dx,
-                             dy);
-                             */
-        return true;
+        x -= h*qSin(radfi)-w*qCos(radfi);
+        y -= -h*qCos(radfi);
+        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
+                             -x*qSin(radfi)+y*qCos(radfi));
     }
     else { // fi == +-180
         return collidingWith(w-x, h-y);
@@ -656,6 +643,8 @@ bool Figure2::collidingWith(QPoint p) {
     return collidingWith(p.x(), p.y());
 }
 bool Figure2::collidingWith(int x, int y) {
+    //if(x<0 or y<0 or x>w or y>h)
+    //    return false;
     if(x<d and y<d) { // D
         int dx = x-d, dy = y-d;
         if(dx*dx+dy*dy<d*d)
