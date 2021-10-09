@@ -35,6 +35,10 @@ private slots:
     void create();
     void delSingle(Figure*);
     void delSelected();
+    void callMousePress(QMouseEvent* e);
+    void callContextMenu(QContextMenuEvent* e);
+    void delAll();
+    void delColliding();
 
 private:
     QAction* _ActionFigure1;
@@ -42,7 +46,9 @@ private:
     QAction* _ActionCreate;
     QAction* _ActionDelete;
 
-    //QMenu* _BackgroundMenu; //additional
+    QMenu* _BackgroundMenu;
+    QAction* _ActionDeleteAll;
+    QAction* _ActionDeleteColliding;
     //QMenu* _FigureMenu; // хрень реализации, но так заметно проще
     QVector<Figure*> figures;
     char selected;

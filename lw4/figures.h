@@ -15,7 +15,10 @@ public:
     EditDialog(int, int, int, int, int, int, int, int, int, bool,
                QWidget *parent = nullptr);
 
-    int getw(), geth(), geta(), getb(), getc(), getd(), gete(), getf(), getfi();
+    int getw(), geth(), geta(), getb(), getc(), getd(),
+        gete(), getf(), getfi();
+    void setw(int), seth(int), seta(int), setb(int), setc(int), setd(int),
+         sete(int), setf(int), setfi(int);
 
 private slots:
     void wValueChanged(int val);
@@ -85,7 +88,12 @@ public:
 
     void deselect();
     bool isSelected();
-    int getFi();
+    //int getFi();
+    bool getForm();
+    bool isBlocked();
+    void block();
+
+    friend bool figuresColliding(Figure*, Figure*, int, int);
 
 protected:
     //void paintEvent(QPaintEvent* e); // на перегрузки
@@ -99,9 +107,11 @@ protected:
         fi;
     bool selected;
     bool lmHolds;
+    bool form; // false = 1, true = 2;
     QMenu* _FigureMenu;
     EditDialog* _EditDialog;
     RotateDialog* _RotateDialog;
+    bool blocked;
 
     //int dx, dy;
 
@@ -136,6 +146,10 @@ class Figure1 : public Figure
 public:
     explicit Figure1(QWidget *parent = nullptr);
 
+    friend bool figuresColliding(Figure1*, Figure1*, int, int);
+    friend bool figuresColliding(Figure1*, Figure2*, int, int);
+    friend bool figuresColliding(Figure2*, Figure1*, int, int);
+
 protected:
     void paintEvent(QPaintEvent* event);
     void contextMenuEvent(QContextMenuEvent* e);
@@ -145,9 +159,6 @@ protected:
     bool collidingWithBox(int x, int y);
     bool collidingWith(QPoint p);
     bool collidingWith(int x, int y);
-    bool collidingWith(Figure1*);
-    bool collidingWith(Figure2*);
-
 };
 
 // фигура 60: AB1C3D4E5F5
@@ -157,6 +168,10 @@ class Figure2 : public Figure
 public:
     explicit Figure2(QWidget *parent = nullptr);
 
+    friend bool figuresColliding(Figure2*, Figure2*, int, int);
+    friend bool figuresColliding(Figure1*, Figure2*, int, int);
+    friend bool figuresColliding(Figure2*, Figure1*, int, int);
+
 protected:
     void paintEvent(QPaintEvent* event);
     void contextMenuEvent(QContextMenuEvent* e);
@@ -166,8 +181,12 @@ protected:
     bool collidingWithBox(int x, int y);
     bool collidingWith(QPoint p);
     bool collidingWith(int x, int y);
-    bool collidingWith(Figure1*);
-    bool collidingWith(Figure2*);
 };
+
+
+//bool figuresColliding(Figure1*, Figure1*);
+//bool figuresColliding(Figure2*, Figure2*);
+//bool figuresColliding(Figure1*, Figure2*);
+//bool figuresColliding(Figure2*, Figure1*);
 
 #endif // FIGURES_H

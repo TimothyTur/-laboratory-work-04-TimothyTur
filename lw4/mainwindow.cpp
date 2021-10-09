@@ -22,6 +22,14 @@ MainWindow::MainWindow(QWidget *parent)
     _ActionDelete = menuBar()->addAction(tr("&Delete"),
                                           this, SLOT(delSelected()));
 
+    _BackgroundMenu = new QMenu(this);
+    _ActionDeleteAll =
+            _BackgroundMenu->addAction(tr("&Delete All"),
+                                       this, SLOT(delAll()));
+    _ActionDeleteColliding =
+            _BackgroundMenu->addAction(tr("&Delete Colliding"),
+                                       this, SLOT(delColliding()));
+
     toolbarH = menuBar()->height();
     setFixedSize(800, 622);
 
@@ -70,6 +78,7 @@ MainWindow::~MainWindow() {}
 void MainWindow::contextMenuEvent(QContextMenuEvent* event) {
     //additional:
     //    show BackgroundMenu
+    _BackgroundMenu->exec(event->globalPos());
 }
 void MainWindow::mousePressEvent(QMouseEvent* event) {
     if(event->button() == Qt::LeftButton)
@@ -95,7 +104,7 @@ void MainWindow::deselect(Figure* figure) {
     update();
 }
 void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
-    if(figure->isSelected()) {
+    if(not figure->isBlocked()) {
         int x = figure->geometry().left(),
             y = figure->geometry().top(),
             w = figure->geometry().right() - x,
@@ -109,7 +118,41 @@ void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
             y = 23;
         else if(y+h>623)
             y = 623-h;
-        figure->move(x, y);
+        bool toCheck;
+        for(int i=0; i<figures.size(); ++i) {
+            toCheck = false;
+            if(figures[i] != figure) {
+                int xf = figures[i]->geometry().left(),
+                    yf = figures[i]->geometry().top(),
+                    wf = figures[i]->geometry().right() - xf,
+                    hf = figures[i]->geometry().bottom() - yf;
+                if(x>xf and x<xf+wf) {
+                    if(y>yf and y<yf+hf) {
+                        toCheck = true;
+                    }
+                    else if(y+h>yf and y+h<yf+hf) {
+                        toCheck = true;
+                    }
+                }
+                else if(x+w>xf and x+w<xf+wf) {
+                    if(y>yf and y<yf+hf) {
+                        toCheck = true;
+                    }
+                    else if(y+h>yf and y+h<yf+hf) {
+                        toCheck = true;
+                    }
+                }
+                if(toCheck) {
+                    if(figuresColliding(figure, figures[i],
+                                        x-xf, y-yf)) {
+                        figure->block();
+                        figures[i]->block();
+                    }
+                }
+            }
+        }
+        if(not figure->isBlocked())
+            figure->move(x, y);
     }
 }
 void MainWindow::select1() {
@@ -130,9 +173,8 @@ void MainWindow::create() {
         f = new Figure2(this);
     else
         return;
-    int w = QRandomGenerator::global()->bounded(600),
-        h = QRandomGenerator::global()->bounded(23, 423);
-    f->move(w, h);
+    f->move(QRandomGenerator::global()->bounded(600),
+            QRandomGenerator::global()->bounded(23, 423));
     f->show();
     connect(f, SIGNAL(selectedSgn(Figure*)),
             this, SLOT(deselect(Figure*)));
@@ -140,7 +182,49 @@ void MainWindow::create() {
             this, SLOT(moveFigure(Figure*,int,int)));
     connect(f, SIGNAL(delSgn(Figure*)),
             this, SLOT(delSingle(Figure*)));
+    connect(f, SIGNAL(mousePressSgn(QMouseEvent*)),
+            this, SLOT(callMousePress(QMouseEvent*)));
+    connect(f, SIGNAL(contextMenuSgn(QContextMenuEvent*)),
+            this, SLOT(callContextMenu(QContextMenuEvent*)));
     figures.push_back(f);
+
+    int x = f->geometry().left(),
+        y = f->geometry().top(),
+        w = f->geometry().right() - x,
+        h = f->geometry().bottom() - y;
+    bool toCheck;
+    for(int i=0; i<figures.size(); ++i) {
+        toCheck = false;
+        if(figures[i] != f) {
+            int xf = figures[i]->geometry().left(),
+                yf = figures[i]->geometry().top(),
+                wf = figures[i]->geometry().right() - xf,
+                hf = figures[i]->geometry().bottom() - yf;
+            if(x>xf and x<xf+wf) {
+                if(y>yf and y<yf+hf) {
+                    toCheck = true;
+                }
+                else if(y+h>yf and y+h<yf+hf) {
+                    toCheck = true;
+                }
+            }
+            else if(x+w>xf and x+w<xf+wf) {
+                if(y>yf and y<yf+hf) {
+                    toCheck = true;
+                }
+                else if(y+h>yf and y+h<yf+hf) {
+                    toCheck = true;
+                }
+            }
+            if(toCheck) {
+                if(figuresColliding(f, figures[i],
+                                    x-xf, y-yf)) {
+                    f->block();
+                    figures[i]->block();
+                }
+            }
+        }
+    }
     update();
 }
 void MainWindow::delSingle(Figure* figure) {
@@ -156,6 +240,34 @@ void MainWindow::delSelected() {
             figures[i] = nullptr;
             figures.remove(i);
         }
+    }
+    update();
+}
+void MainWindow::callMousePress(QMouseEvent* e) {
+    mousePressEvent(e);
+}
+void MainWindow::callContextMenu(QContextMenuEvent* e) {
+    contextMenuEvent(e);
+}
+void MainWindow::delAll() {
+    int sz = figures.size();
+    while(sz) {
+        delete figures[sz-1];
+        figures[sz-1] = nullptr;
+        figures.pop_back();
+        sz--;
+    }
+}
+void MainWindow::delColliding() {
+    int i=0;
+    while(i!=figures.size()) {
+        if(figures[i]->isBlocked()) {
+            delete figures[i];
+            figures[i] = nullptr;
+            figures.remove(i);
+        }
+        else
+            ++i;
     }
     update();
 }
