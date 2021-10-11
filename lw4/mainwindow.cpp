@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent)
                                           this, SLOT(create()));
     _ActionDelete = menuBar()->addAction(tr("&Delete"),
                                           this, SLOT(delSelected()));
+    _ActionCreate->setEnabled(false);
+    _ActionDelete->setEnabled(false);
 
     _BackgroundMenu = new QMenu(this);
     _ActionDeleteAll =
@@ -81,8 +83,10 @@ void MainWindow::contextMenuEvent(QContextMenuEvent* event) {
     _BackgroundMenu->exec(event->globalPos());
 }
 void MainWindow::mousePressEvent(QMouseEvent* event) {
-    if(event->button() == Qt::LeftButton)
+    if(event->button() == Qt::LeftButton) {
         deselect(nullptr);
+        _ActionDelete->setEnabled(false);
+    }
 }
 void MainWindow::mouseMoveEvent(QMouseEvent* e) {
     /*
@@ -101,6 +105,8 @@ void MainWindow::deselect(Figure* figure) {
         if(figures[i]!=figure)
             figures[i]->deselect();
     }
+    if(figure != nullptr)
+        _ActionDelete->setEnabled(true);
     update();
 }
 void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
@@ -158,11 +164,13 @@ void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
 void MainWindow::select1() {
     _ActionFigure1->setEnabled(false);
     _ActionFigure2->setEnabled(true);
+    _ActionCreate->setEnabled(true);
     selected = 1;
 }
 void MainWindow::select2() {
     _ActionFigure1->setEnabled(true);
     _ActionFigure2->setEnabled(false);
+    _ActionCreate->setEnabled(true);
     selected = 2;
 }
 void MainWindow::create() {
@@ -241,6 +249,7 @@ void MainWindow::delSelected() {
             figures.remove(i);
         }
     }
+    _ActionDelete->setEnabled(false);
     update();
 }
 void MainWindow::callMousePress(QMouseEvent* e) {

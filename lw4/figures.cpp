@@ -76,7 +76,7 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
 
     fiSpinBox = new QSpinBox;
     fiSpinBox->setRange(-180, 180);
-    fiSpinBox->setValue(fi);
+    fiSpinBox->setValue(-fi);
     fiLabel = new QLabel(tr("&Fi Degree:"));
     fiLabel->setBuddy(fiSpinBox);
 
@@ -156,15 +156,42 @@ int EditDialog::getd() {return d;}
 int EditDialog::gete() {return e;}
 int EditDialog::getf() {return f;}
 int EditDialog::getfi() {return fi;}
-void EditDialog::setw(int val) {w = val;}
-void EditDialog::seth(int val) {h = val;}
-void EditDialog::seta(int val) {a = val;}
-void EditDialog::setb(int val) {b = val;}
-void EditDialog::setc(int val) {c = val;}
-void EditDialog::setd(int val) {d = val;}
-void EditDialog::sete(int val) {e = val;}
-void EditDialog::setf(int val) {f = val;}
-void EditDialog::setfi(int val) {fi = val;}
+void EditDialog::setw(int val) {
+    w = val;
+    wSpinBox->setValue(w);
+}
+void EditDialog::seth(int val) {
+    h = val;
+    hSpinBox->setValue(h);
+}
+void EditDialog::seta(int val) {
+    a = val;
+    aSpinBox->setValue(a);
+}
+void EditDialog::setb(int val) {
+    b = val;
+    bSpinBox->setValue(b);
+}
+void EditDialog::setc(int val) {
+    c = val;
+    cSpinBox->setValue(c);
+}
+void EditDialog::setd(int val) {
+    d = val;
+    dSpinBox->setValue(d);
+}
+void EditDialog::sete(int val) {
+    e = val;
+    eSpinBox->setValue(e);
+}
+void EditDialog::setf(int val) {
+    f = val;
+    fSpinBox->setValue(f);
+}
+void EditDialog::setfi(int val) {
+    fi = val;
+    fiSpinBox->setValue(-fi);
+}
 
 //private slots:
 void EditDialog::wValueChanged(int val) {
@@ -299,7 +326,7 @@ void EditDialog::fValueChanged(int val) {
     PLabel->setText(tr("P : ")+QString::number(P));
 }
 void EditDialog::fiValueChanged(int val) {
-    fi = val;
+    fi = -val;
 }
 
 //RotateDialog

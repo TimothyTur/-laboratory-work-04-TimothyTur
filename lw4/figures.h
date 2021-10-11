@@ -92,6 +92,8 @@ public:
     bool getForm();
     bool isBlocked();
     void block();
+    int W();
+    int H();
 
     friend bool figuresColliding(Figure*, Figure*, int, int);
 
@@ -102,7 +104,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
 
-    int w, h,
+    int w, h, s,
         a, b, c, d, e, f,
         fi;
     bool selected;
