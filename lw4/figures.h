@@ -32,7 +32,7 @@ private slots:
     void fiValueChanged(int val);
 
 private: // ыы
-    int w, h,
+    int w, h, s,
         a, b, c, d, e, f,
         fi;
     double S, P;
@@ -67,6 +67,7 @@ public:
     RotateDialog(int& fi, QWidget* parent = nullptr);
 
     int getFi();
+    void setFi(int);
 
 private slots:
     void fiChanged(int);
@@ -89,27 +90,33 @@ public:
     void deselect();
     bool isSelected();
     //int getFi();
-    bool getForm();
+    virtual bool getForm() = 0;
     bool isBlocked();
     void block();
-    int W();
-    int H();
+    void unblock();
+    virtual int top() = 0;
+    virtual int bottom() = 0;
+    virtual int left() = 0;
+    virtual int right() = 0;
+    void minimize();
 
     friend bool figuresColliding(Figure*, Figure*, int, int);
 
 protected:
     //void paintEvent(QPaintEvent* e); // на перегрузки
-    //void contextMenuEvent(QContextMenuEvent* e); // на перегрузки
-    //void mousePressEvent(QMouseEvent* e); // на перегрузки
+    void contextMenuEvent(QContextMenuEvent* e);
+    void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
     void mouseMoveEvent(QMouseEvent* e);
+
+    virtual bool collidingWithDot(QPoint p) = 0;
+    virtual bool collidingWithDot(int x, int y) = 0;
 
     int w, h, s,
         a, b, c, d, e, f,
         fi;
     bool selected;
     bool lmHolds;
-    bool form; // false = 1, true = 2;
     QMenu* _FigureMenu;
     EditDialog* _EditDialog;
     RotateDialog* _RotateDialog;
@@ -139,28 +146,24 @@ signals:
     void mousePressSgn(QMouseEvent*);
 };
 
-class Figure2;
-
 // фигура 55: A3B3C2D3EF6
 class Figure1 : public Figure
 {
     Q_OBJECT
 public:
     explicit Figure1(QWidget *parent = nullptr);
+    bool getForm();
 
-    friend bool figuresColliding(Figure1*, Figure1*, int, int);
-    friend bool figuresColliding(Figure1*, Figure2*, int, int);
-    friend bool figuresColliding(Figure2*, Figure1*, int, int);
+    int top();
+    int bottom();
+    int left();
+    int right();
 
 protected:
     void paintEvent(QPaintEvent* event);
-    void contextMenuEvent(QContextMenuEvent* e);
-    void mousePressEvent(QMouseEvent* e);
 
-    bool collidingWithBox(QPoint p);
-    bool collidingWithBox(int x, int y);
-    bool collidingWith(QPoint p);
-    bool collidingWith(int x, int y);
+    bool collidingWithDot(QPoint p);
+    bool collidingWithDot(int x, int y);
 };
 
 // фигура 60: AB1C3D4E5F5
@@ -169,20 +172,18 @@ class Figure2 : public Figure
     Q_OBJECT
 public:
     explicit Figure2(QWidget *parent = nullptr);
+    bool getForm();
 
-    friend bool figuresColliding(Figure2*, Figure2*, int, int);
-    friend bool figuresColliding(Figure1*, Figure2*, int, int);
-    friend bool figuresColliding(Figure2*, Figure1*, int, int);
+    int top();
+    int bottom();
+    int left();
+    int right();
 
 protected:
     void paintEvent(QPaintEvent* event);
-    void contextMenuEvent(QContextMenuEvent* e);
-    void mousePressEvent(QMouseEvent* e);
 
-    bool collidingWithBox(QPoint p);
-    bool collidingWithBox(int x, int y);
-    bool collidingWith(QPoint p);
-    bool collidingWith(int x, int y);
+    bool collidingWithDot(QPoint p);
+    bool collidingWithDot(int x, int y);
 };
 
 

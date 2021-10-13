@@ -39,6 +39,7 @@ private slots:
     void callContextMenu(QContextMenuEvent* e);
     void delAll();
     void delColliding();
+    void fit();
 
 private:
     QAction* _ActionFigure1;
@@ -49,6 +50,7 @@ private:
     QMenu* _BackgroundMenu;
     QAction* _ActionDeleteAll;
     QAction* _ActionDeleteColliding;
+    QAction* _ActionFitAll;
     //QMenu* _FigureMenu; // хрень реализации, но так заметно проще
     QVector<Figure*> figures;
     char selected;

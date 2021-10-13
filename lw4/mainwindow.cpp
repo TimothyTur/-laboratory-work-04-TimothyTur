@@ -31,6 +31,9 @@ MainWindow::MainWindow(QWidget *parent)
     _ActionDeleteColliding =
             _BackgroundMenu->addAction(tr("&Delete Colliding"),
                                        this, SLOT(delColliding()));
+    _ActionFitAll =
+            _BackgroundMenu->addAction(tr("&Fit All Figures"),
+                                       this, SLOT(fit()));
 
     toolbarH = menuBar()->height();
     setFixedSize(800, 622);
@@ -111,10 +114,10 @@ void MainWindow::deselect(Figure* figure) {
 }
 void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
     if(not figure->isBlocked()) {
-        int x = figure->geometry().left(),
-            y = figure->geometry().top(),
-            w = figure->geometry().right() - x,
-            h = figure->geometry().bottom() - y;
+        int x = figure->geometry().left()+figure->left(),
+            y = figure->geometry().top()+figure->top(),
+            w = figure->right() - figure->left(),
+            h = figure->bottom() - figure->top();
         x += dx; y += dy;
         if(x<0)
             x = 0;
@@ -125,40 +128,47 @@ void MainWindow::moveFigure(Figure* figure, int dx, int dy) {
         else if(y+h>623)
             y = 623-h;
         bool toCheck;
+        // hadooken.begin();
         for(int i=0; i<figures.size(); ++i) {
-            toCheck = false;
-            if(figures[i] != figure) {
-                int xf = figures[i]->geometry().left(),
-                    yf = figures[i]->geometry().top(),
-                    wf = figures[i]->geometry().right() - xf,
-                    hf = figures[i]->geometry().bottom() - yf;
-                if(x>xf and x<xf+wf) {
-                    if(y>yf and y<yf+hf) {
-                        toCheck = true;
-                    }
-                    else if(y+h>yf and y+h<yf+hf) {
-                        toCheck = true;
-                    }
-                }
-                else if(x+w>xf and x+w<xf+wf) {
-                    if(y>yf and y<yf+hf) {
-                        toCheck = true;
-                    }
-                    else if(y+h>yf and y+h<yf+hf) {
-                        toCheck = true;
-                    }
-                }
-                if(toCheck) {
-                    if(figuresColliding(figure, figures[i],
-                                        x-xf, y-yf)) {
-                        figure->block();
-                        figures[i]->block();
-                    }
-                }
+          toCheck = false;
+          if(figures[i] != figure) {
+            if(figure->geometry().left()>figures[i]->geometry().left() and
+               figure->geometry().left()<figures[i]->geometry().right()) {
+              if(figure->geometry().top()>figures[i]->geometry().top() and
+                 figure->geometry().top()<figures[i]->geometry().bottom())
+                toCheck = true;
+              else if(
+                 figure->geometry().bottom()>figures[i]->geometry().top() and
+                 figure->geometry().bottom()<figures[i]->geometry().bottom())
+                toCheck = true;
             }
+            else if(
+               figure->geometry().right()>figures[i]->geometry().left() and
+               figure->geometry().right()<figures[i]->geometry().right()) {
+              if(figure->geometry().top()>figures[i]->geometry().top() and
+                 figure->geometry().top()<figures[i]->geometry().bottom())
+                toCheck = true;
+              else if(
+                 figure->geometry().bottom()>figures[i]->geometry().top() and
+                 figure->geometry().bottom()<figures[i]->geometry().bottom())
+                toCheck = true;
+            }
+            if(toCheck) {
+              if(figuresColliding(figure, figures[i],
+                    figure->geometry().left()-figures[i]->geometry().left(),
+                    figure->geometry().top()-figures[i]->geometry().top()) or
+                 figuresColliding(figures[i], figure,
+                    figures[i]->geometry().left()-figure->geometry().left(),
+                    figures[i]->geometry().top()-figure->geometry().top())) {
+                figure->block();
+                figures[i]->block();
+              }
+            }
+          }
         }
+        //hadooken.end();
         if(not figure->isBlocked())
-            figure->move(x, y);
+            figure->move(x-figure->left(), y-figure->top());
     }
 }
 void MainWindow::select1() {
@@ -181,8 +191,8 @@ void MainWindow::create() {
         f = new Figure2(this);
     else
         return;
-    f->move(QRandomGenerator::global()->bounded(600),
-            QRandomGenerator::global()->bounded(23, 423));
+    f->move(QRandomGenerator::global()->bounded(500),
+            QRandomGenerator::global()->bounded(23, 323));
     f->show();
     connect(f, SIGNAL(selectedSgn(Figure*)),
             this, SLOT(deselect(Figure*)));
@@ -196,43 +206,46 @@ void MainWindow::create() {
             this, SLOT(callContextMenu(QContextMenuEvent*)));
     figures.push_back(f);
 
-    int x = f->geometry().left(),
-        y = f->geometry().top(),
-        w = f->geometry().right() - x,
-        h = f->geometry().bottom() - y;
     bool toCheck;
+    // hadooken.begin();
     for(int i=0; i<figures.size(); ++i) {
-        toCheck = false;
-        if(figures[i] != f) {
-            int xf = figures[i]->geometry().left(),
-                yf = figures[i]->geometry().top(),
-                wf = figures[i]->geometry().right() - xf,
-                hf = figures[i]->geometry().bottom() - yf;
-            if(x>xf and x<xf+wf) {
-                if(y>yf and y<yf+hf) {
-                    toCheck = true;
-                }
-                else if(y+h>yf and y+h<yf+hf) {
-                    toCheck = true;
-                }
-            }
-            else if(x+w>xf and x+w<xf+wf) {
-                if(y>yf and y<yf+hf) {
-                    toCheck = true;
-                }
-                else if(y+h>yf and y+h<yf+hf) {
-                    toCheck = true;
-                }
-            }
-            if(toCheck) {
-                if(figuresColliding(f, figures[i],
-                                    x-xf, y-yf)) {
-                    f->block();
-                    figures[i]->block();
-                }
-            }
+      toCheck = false;
+      if(figures[i] != f) {
+        if(f->geometry().left()>figures[i]->geometry().left() and
+           f->geometry().left()<figures[i]->geometry().right()) {
+          if(f->geometry().top()>figures[i]->geometry().top() and
+             f->geometry().top()<figures[i]->geometry().bottom())
+            toCheck = true;
+          else if(
+             f->geometry().bottom()>figures[i]->geometry().top() and
+             f->geometry().bottom()<figures[i]->geometry().bottom())
+            toCheck = true;
         }
+        else if(
+           f->geometry().right()>figures[i]->geometry().left() and
+           f->geometry().right()<figures[i]->geometry().right()) {
+          if(f->geometry().top()>figures[i]->geometry().top() and
+             f->geometry().top()<figures[i]->geometry().bottom())
+            toCheck = true;
+          else if(
+             f->geometry().bottom()>figures[i]->geometry().top() and
+             f->geometry().bottom()<figures[i]->geometry().bottom())
+            toCheck = true;
+        }
+        if(toCheck) {
+          if(figuresColliding(f, figures[i],
+                f->geometry().left()-figures[i]->geometry().left(),
+                f->geometry().top()-figures[i]->geometry().top()) or
+             figuresColliding(figures[i], f,
+                figures[i]->geometry().left()-f->geometry().left(),
+                figures[i]->geometry().top()-f->geometry().top())) {
+            f->block();
+            figures[i]->block();
+          }
+        }
+      }
     }
+    // hadooken.end();
     update();
 }
 void MainWindow::delSingle(Figure* figure) {
@@ -277,6 +290,20 @@ void MainWindow::delColliding() {
         }
         else
             ++i;
+    }
+    update();
+}
+void MainWindow::fit() {
+    int dx = 0, dy = 0;
+    for(int i=0; i<figures.size(); ++i) {
+        figures[i]->unblock();
+        figures[i]->minimize();
+        figures[i]->move(dx+1, dy+24);
+        dx = figures[i]->geometry().right();
+        if(dx > 800) {
+            dx = 0;
+            dy = figures[i]->geometry().bottom();
+        }
     }
     update();
 }

@@ -362,6 +362,9 @@ RotateDialog::RotateDialog(int& fi, QWidget* parent)
 int RotateDialog::getFi() {
     return fiDial->value();
 }
+void RotateDialog::setFi(int val) {
+    fiDial->setValue(val);
+}
 
 //private slots:
 void RotateDialog::fiChanged(int val) {
@@ -374,6 +377,7 @@ Figure::Figure(QWidget *parent)
     : QWidget(parent)
     , w(QRandomGenerator::global()->bounded(20, 200))
     , h(QRandomGenerator::global()->bounded(w/3, w))
+    , s(qSqrt(w*w+h*h))
     , a(QRandomGenerator::global()->bounded(0, h/3))
     , b(QRandomGenerator::global()->bounded(0, h/3))
     , c(QRandomGenerator::global()->bounded(0, h/3))
@@ -385,10 +389,7 @@ Figure::Figure(QWidget *parent)
     , lmHolds(false)
     , blocked(false)
 {
-    setFixedSize((w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-                 (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))+1,
-                 (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-                 (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))+1);
+    setFixedSize(s, s);
     _FigureMenu = new QMenu(this);
     _ActionFigureDelete = _FigureMenu->addAction(tr("Delete"),
                                                  this,
@@ -402,8 +403,6 @@ Figure::Figure(QWidget *parent)
     _ActionFigureRotate = _FigureMenu->addAction(tr("Rotate"),
                                                  this,
                                                  SLOT(showFigureRotate()));
-    //_EditDialog = new EditDialog(w, h, a, b, c, d, e, f, fi, this);
-    //connect(_EditDialog, SIGNAL(accepted()), this, SLOT(figureChanged()));
     _RotateDialog = new RotateDialog(fi, this);
     connect(_RotateDialog, SIGNAL(fiChangedSgn(int)),
             this,          SLOT(fiChanged(int)));
@@ -416,32 +415,63 @@ void Figure::deselect() {
 bool Figure::isSelected() {
     return selected;
 }
-bool Figure::getForm() {return form;}
 bool Figure::isBlocked() {return blocked;}
 void Figure::block() {
     blocked = true;
     lmHolds = false;
     setMouseTracking(false);
 }
+void Figure::unblock() {
+    blocked = false;
+}
+void Figure::minimize() {
+    w = 20;
+    h = 20;
+    s = qSqrt(w*w+h*h);
+    if(a>6)
+        a = 6;
+    if(b>6)
+        b = 6;
+    if(c>6)
+        c = 6;
+    if(d>6)
+        d = 6;
+    if(e>5)
+        e = 5;
+    if(f>5)
+        f = 5;
+    fi = 0;
 
+    setFixedSize(s, s);
+    update();
+}
+
+//protected:
+void Figure::contextMenuEvent(QContextMenuEvent* e) {
+    if(collidingWithDot(e->pos()))
+        _FigureMenu->exec(e->globalPos());
+    else
+        emit contextMenuSgn(e);
+}
+void Figure::mousePressEvent(QMouseEvent* e) {
+    if(collidingWithDot(e->pos())) {
+        if(e->button()==Qt::LeftButton) {
+            selected = true;
+            emit selectedSgn(this);
+            if(not blocked) {
+                lmHolds = true;
+                emit moveSgn(this, e->pos().x()-s/2, e->pos().y()-s/2);
+            }
+        }
+        update();
+    }
+    else
+        emit mousePressSgn(e);
+}
 void Figure::mouseMoveEvent(QMouseEvent* e) {
     if(not blocked) {
-        if(hasMouseTracking())
-            emit moveSgn(this,
-                         e->pos().x()
-                         -w/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                         -h/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))),
-                         e->pos().y()
-                         -h/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                         -w/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))));
-        else if(lmHolds)
-            emit moveSgn(this,
-                         e->pos().x()
-                         -w/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                         -h/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))),
-                         e->pos().y()
-                         -h/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                         -w/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))));
+        if(hasMouseTracking() or lmHolds)
+            emit moveSgn(this, e->pos().x()-s/2, e->pos().y()-s/2);
         update();
     }
 }
@@ -479,20 +509,18 @@ void Figure::figureChanged() {
         e = _EditDialog->gete();
         f = _EditDialog->getf();
         fi = _EditDialog->getfi();
-        setFixedSize((w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-                     (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))+1,
-                     (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-                     (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))+1);
+
+        int news = qSqrt(w*w+h*h);
+        setFixedSize(news, news);
+        emit moveSgn(this, (s-news)/2, (s-news)/2);
+        s = news;
+
         update();
     }
 }
 void Figure::fiChanged(int val) {
     if(not blocked) {
         fi = val;
-        setFixedSize((w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-                     (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))+1,
-                     (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-                     (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))+1);
         update();
     }
 }
@@ -504,32 +532,124 @@ void Figure::startMoving() {
         else {
             setMouseTracking(true);
             QPoint p = this->mapFromGlobal(QCursor::pos());
-            emit moveSgn(this,
-                         p.x()
-                         -w/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                         -h/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))),
-                         p.y()
-                         -h/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                         -w/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))));
+            emit moveSgn(this, p.x()-s/2, p.y()-s/2);
         }
     }
 }
 void Figure::showFigureRotate() {
+    _RotateDialog->setFi(fi);
     _RotateDialog->exec();
 }
 
 // Figure1
+//public:
 Figure1::Figure1(QWidget *parent) : Figure(parent) {
-    form = false;
     _EditDialog = new EditDialog(w, h, a, b, c, d, e, f, fi, false, this);
     connect(_EditDialog, SIGNAL(accepted()), this, SLOT(figureChanged()));
 }
+bool Figure1::getForm() {return false;}
+int Figure1::top() {
+    int ix[] = {
+           d,                   w-a,
+        0,                           w,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+             0,       0,
+        d,               a,
+        h-c,             h-b,
+             h, h, h, h
+    };
+    int miny = s, dy;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
 
+    for(int i=0; i<10; ++i) {
+        dy = ix[i]*qSin(radfi)+iy[i]*qCos(radfi)
+                + s/2-w/2*qSin(radfi)-h/2*qCos(radfi);
+        if(dy<miny)
+            miny = dy;
+    }
+    return miny;
+}
+int Figure1::bottom() {
+    int ix[] = {
+           d,                   w-a,
+        0,                           w,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+             0,       0,
+        d,               a,
+        h-c,             h-b,
+             h, h, h, h
+    };
+    int maxy = 0, dy;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+
+    for(int i=0; i<10; ++i) {
+        dy = ix[i]*qSin(radfi)+iy[i]*qCos(radfi)
+                + s/2-w/2*qSin(radfi)-h/2*qCos(radfi);
+        if(dy>maxy)
+            maxy = dy;
+    }
+    return maxy;
+}
+int Figure1::left() {
+    int ix[] = {
+           d,                   w-a,
+        0,                           w,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+             0,       0,
+        d,               a,
+        h-c,             h-b,
+             h, h, h, h
+    };
+    int minx = s, dx;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+
+    for(int i=0; i<10; ++i) {
+        dx = ix[i]*qCos(radfi)-iy[i]*qSin(radfi)
+                + s/2-w/2*qCos(radfi)+h/2*qSin(radfi);
+        if(dx<minx)
+            minx = dx;
+    }
+    return minx;
+}
+int Figure1::right() {
+    int ix[] = {
+           d,                   w-a,
+        0,                           w,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+             0,       0,
+        d,               a,
+        h-c,             h-b,
+             h, h, h, h
+    };
+    int maxx = 0, dx;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+
+    for(int i=0; i<10; ++i) {
+        dx = ix[i]*qCos(radfi)-iy[i]*qSin(radfi)
+                + s/2-w/2*qCos(radfi)+h/2*qSin(radfi);
+        if(dx>maxx)
+            maxx = dx;
+    }
+    return maxx;
+}
+//protected:
 void Figure1::paintEvent(QPaintEvent* e) {
     QPainter painter(this);
-    // для тестов
     /*
-    painter.setPen(Q t::red);
+    // для тестов
+    painter.setPen(Qt::red);
     //painter.drawEllipse(dx, dy, 2, 2); // это был клик по фигуре в 0
     painter.drawArc(w-a, -a, 2*a, 2*a, 180*16, 90*16); // A
     painter.drawLine(w, a, w, h-b);
@@ -541,31 +661,39 @@ void Figure1::paintEvent(QPaintEvent* e) {
     painter.drawLine(0, h-c, 0, d);
     painter.drawArc(-d, -d, 2*d, 2*d, 270*16, 90*16);  // D
     painter.drawLine(d, 0, w-a, 0);                    // E
+    painter.drawEllipse(-1, -1, 2, 2);
+    painter.drawEllipse(s-2, -1, 2, 2);
+    painter.drawEllipse(-1, s-2, 2, 2);
+    painter.drawEllipse(s-2, s-2, 2, 2);
+    */
+    /* // остатки старого кода
+    painter.drawEllipse(-1, -1, 2, 2);
+    painter.drawEllipse(
+            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            -1, 2, 2);
+    painter.drawEllipse(-1,
+            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            2, 2);
+    painter.drawEllipse(
+            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            2, 2);
     */
 
     if(selected)
         painter.setPen(Qt::blue);
     else
         painter.setPen(Qt::black);
-
-    if(fi>=-180 and fi<-90)
-        painter.translate(
-                -(w+1)*qCos(qDegreesToRadians(static_cast<float>(fi))),
-                (w+1)*qSin(qDegreesToRadians(static_cast<float>(-fi)))-
-                (h+1)*qCos(qDegreesToRadians(static_cast<float>(fi))));
-    else if(fi>=-90 and fi<0)
-        painter.translate(
-                0,
-                (w+1)*qSin(qDegreesToRadians(static_cast<float>(-fi))));
-    else if(fi>0 and fi<=90)
-        painter.translate(
-                (h+1)*qSin(qDegreesToRadians(static_cast<float>(fi))),
-                0);
-    else if(fi>90 and fi<=180)
-        painter.translate(
-                (h+1)*qSin(qDegreesToRadians(static_cast<float>(fi)))-
-                (w+1)*qCos(qDegreesToRadians(static_cast<float>(fi))),
-                -(h+1)*qCos(qDegreesToRadians(static_cast<float>(fi))));
+    painter.translate(s/2+
+                      -w/2*qCos(qDegreesToRadians(static_cast<float>(fi)))+
+                      h/2*qSin(qDegreesToRadians(static_cast<float>(fi))),
+                      s/2+
+                      -w/2*qSin(qDegreesToRadians(static_cast<float>(fi)))-
+                      h/2*qCos(qDegreesToRadians(static_cast<float>(fi))));
     painter.rotate(fi);
 
     painter.drawArc(w-a, -a, 2*a, 2*a, 180*16, 90*16); // A
@@ -580,106 +708,17 @@ void Figure1::paintEvent(QPaintEvent* e) {
     painter.drawLine(d, 0, w-a, 0);                    // E
 
 }
-void Figure1::contextMenuEvent(QContextMenuEvent* e) {
-    if(collidingWithBox(e->pos()))
-        _FigureMenu->exec(e->globalPos());
-    else
-        emit contextMenuSgn(e);
+bool Figure1::collidingWithDot(QPoint p) {
+    return collidingWithDot(p.x(), p.y());
 }
-void Figure1::mousePressEvent(QMouseEvent* e) {
-    if(collidingWithBox(e->pos())) {
-        if(e->button()==Qt::LeftButton) {
-            selected = true;
-            emit selectedSgn(this);
-            if(not blocked) {
-                lmHolds = true;
-                emit moveSgn(this,
-                     e->pos().x()
-                     -w/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                     -h/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))),
-                     e->pos().y()
-                     -h/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                     -w/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))));
-            }
-        }
-        update();
-    }
-    else
-        emit mousePressSgn(e);
-}
+bool Figure1::collidingWithDot(int x, int y) {
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+    x -= s/2+-w/2*qCos(radfi)+h/2*qSin(radfi);
+    y -= s/2+ -w/2*qSin(radfi)-h/2*qCos(radfi);
+    int t = x*qCos(radfi)+y*qSin(radfi);
+    y = -x*qSin(radfi)+y*qCos(radfi);
+    x = t;
 
-bool Figure1::collidingWithBox(QPoint p) {
-    return collidingWithBox(p.x(), p.y());
-}
-bool Figure1::collidingWithBox(int x, int y) {
-    // некоторые условия здесь можно убрать, но мб потом
-    if(fi>-180 and fi<-90) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y>x*k-h*qCos(radfi) or //y1
-           y<-x/k-h*qCos(radfi) or //y2
-           y<x*k+h*qSin(radfi)*k or //y3
-           y>-x/k-w*qSin(radfi)-(w*qCos(radfi)+h*qSin(radfi))/k) //y4
-            return false;
-        x -= -w*qCos(radfi);
-        y -= -w*qSin(radfi)-h*qCos(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else if(fi==-90) {
-        return collidingWith(-y+w, x);
-    }
-    else if(fi>-90 and fi<0) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y<x*k-w*qSin(radfi) or //y1
-           y<-x/k+w*qCos(radfi)/k or //y2
-           y>x*k+h*qCos(radfi)-(w*qCos(radfi)-h*qSin(radfi))*k or //y3
-           y>-x/k-w*qSin(radfi))
-            return false;
-        y -= -w*qSin(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else if(fi==0) {
-        return collidingWith(x, y);
-    }
-    else if(fi>0 and fi<90) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y<x*k-h*qSin(radfi)*k or //y1
-           y>-x/k+w*qSin(radfi)+(h*qSin(radfi)+w*qCos(radfi))/k or //y2
-           y>x*k+h*qCos(radfi) or //y3
-           y<-x/k+h*qCos(radfi)) //y4
-            return false;
-        x -= h*qSin(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else if(fi==90) {
-        return collidingWith(y, -x+h);
-    }
-    else if(fi>90 and fi<180) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y>x*k-h*qCos(radfi)-(h*qSin(radfi)-w*qCos(radfi))*k or //y1
-           y>-x/k+w*qSin(radfi) or //y2
-           y<x*k+w*qSin(radfi) or //y3
-           y<-x/k-w*qCos(radfi)/k) //y4
-            return false;
-        x -= h*qSin(radfi)-w*qCos(radfi);
-        y -= -h*qCos(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else { // fi == +-180
-        return collidingWith(w-x, h-y);
-    }
-}
-bool Figure1::collidingWith(QPoint p) {
-    return collidingWith(p.x(), p.y());
-}
-bool Figure1::collidingWith(int x, int y) {
     if(x<0 or x>w or y<0 or y>h)
         return false;
 
@@ -717,16 +756,137 @@ bool Figure1::collidingWith(int x, int y) {
     return true;
 }
 // Figure2
+//public:
 Figure2::Figure2(QWidget *parent) : Figure(parent) {
-    form = true;
     _EditDialog = new EditDialog(w, h, a, b, c, d, e, f, fi, true, this);
     connect(_EditDialog, SIGNAL(accepted()), this, SLOT(figureChanged()));
 }
+bool Figure2::getForm() {return true;}
+int Figure2::top() {
+    int ix[] = {
+            d, w/2-e/2, w/2+e/2, w,
+           static_cast<int>(0.61731656*d), // ободок
+          static_cast<int>(0.29289321*d),
+         static_cast<int>(0.07612046*d),
+        0,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+          0, 0, 0, 0,
+        static_cast<int>(0.07612046*d), // ободок
+       static_cast<int>(0.29289321*d),
+      static_cast<int>(0.61731656*d),
+     d,
+     h-c,             h-b,
+          h, h, h, h
+    };
+    int miny = s, dy;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
 
+    for(int i=0; i<14; ++i) {
+        dy = ix[i]*qSin(radfi)+iy[i]*qCos(radfi)
+                + s/2-w/2*qSin(radfi)-h/2*qCos(radfi);
+        if(dy<miny)
+            miny = dy;
+    }
+    return miny;
+}
+int Figure2::bottom() {
+    int ix[] = {
+            d, w/2-e/2, w/2+e/2, w,
+           static_cast<int>(0.61731656*d), // ободок
+          static_cast<int>(0.29289321*d),
+         static_cast<int>(0.07612046*d),
+        0,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+          0, 0, 0, 0,
+        static_cast<int>(0.07612046*d), // ободок
+       static_cast<int>(0.29289321*d),
+      static_cast<int>(0.61731656*d),
+     d,
+     h-c,             h-b,
+          h, h, h, h
+    };
+    int maxy = 0, dy;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+
+    for(int i=0; i<14; ++i) {
+        dy = ix[i]*qSin(radfi)+iy[i]*qCos(radfi)
+                + s/2-w/2*qSin(radfi)-h/2*qCos(radfi);
+        if(dy>maxy)
+            maxy = dy;
+    }
+    return maxy;
+}
+int Figure2::left() {
+    int ix[] = {
+            d, w/2-e/2, w/2+e/2, w,
+           static_cast<int>(0.61731656*d), // ободок
+          static_cast<int>(0.29289321*d),
+         static_cast<int>(0.07612046*d),
+        0,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+          0, 0, 0, 0,
+        static_cast<int>(0.07612046*d), // ободок
+       static_cast<int>(0.29289321*d),
+      static_cast<int>(0.61731656*d),
+     d,
+     h-c,             h-b,
+          h, h, h, h
+    };
+    int minx = s, dx;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+
+    for(int i=0; i<14; ++i) {
+        dx = ix[i]*qCos(radfi)-iy[i]*qSin(radfi)
+                + s/2-w/2*qCos(radfi)+h/2*qSin(radfi);
+        if(dx<minx)
+            minx = dx;
+    }
+    return minx;
+}
+int Figure2::right() {
+    int ix[] = {
+            d, w/2-e/2, w/2+e/2, w,
+           static_cast<int>(0.61731656*d), // ободок
+          static_cast<int>(0.29289321*d),
+         static_cast<int>(0.07612046*d),
+        0,
+        0,                           w,
+           c, w/2-f/2, w/2+f/2, w-b
+    };
+    int iy[] = {
+          0, 0, 0, 0,
+        static_cast<int>(0.07612046*d), // ободок
+       static_cast<int>(0.29289321*d),
+      static_cast<int>(0.61731656*d),
+     d,
+     h-c,             h-b,
+          h, h, h, h
+    };
+    int maxx = 0, dx;
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+
+    for(int i=0; i<14; ++i) {
+        dx = ix[i]*qCos(radfi)-iy[i]*qSin(radfi)
+                + s/2-w/2*qCos(radfi)+h/2*qSin(radfi);
+        if(dx>maxx)
+            maxx = dx;
+    }
+    return maxx;
+}
+//protevted:
 void Figure2::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
-    // для тестов
-    /*
+
+    /*// для тестов
     painter.setPen(Qt::red);
     //painter.drawEllipse(dx, dy, 2, 2); // это был клик по фигуре в 0
     painter.drawLine(w, 0, w, h-b);                   // A
@@ -745,33 +905,40 @@ void Figure2::paintEvent(QPaintEvent* event) {
     painter.drawLine(w/2-e/2, e/2, w/2+e/2, e/2);     // E
     painter.drawLine(w/2+e/2, e/2, w/2+e/2, 0  );     // E
     painter.drawLine(w/2+e/2, 0, w, 0);               // A
+
+    painter.drawEllipse(-1, -1, 2, 2);
+    painter.drawEllipse(s-2, -1, 2, 2);
+    painter.drawEllipse(-1, s-2, 2, 2);
+    painter.drawEllipse(s-2, s-2, 2, 2);
+    */
+    /*
+    painter.drawEllipse(-1, -1, 2, 2);
+    painter.drawEllipse(
+            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            -1, 2, 2);
+    painter.drawEllipse(-1,
+            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            2, 2);
+    painter.drawEllipse(
+            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
+            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
+            2, 2);
     */
 
-
-    // оригинальный код
     if(selected)
         painter.setPen(Qt::blue);
     else
         painter.setPen(Qt::black);
-
-    if(fi>=-180 and fi<-90)
-        painter.translate(
-                -(w+1)*qCos(qDegreesToRadians(static_cast<float>(fi))),
-                (w+1)*qSin(qDegreesToRadians(static_cast<float>(-fi)))-
-                (h+1)*qCos(qDegreesToRadians(static_cast<float>(fi))));
-    else if(fi>=-90 and fi<0)
-        painter.translate(
-                0,
-                (w+1)*qSin(qDegreesToRadians(static_cast<float>(-fi))));
-    else if(fi>0 and fi<=90)
-        painter.translate(
-                (h+1)*qSin(qDegreesToRadians(static_cast<float>(fi))),
-                0);
-    else if(fi>90 and fi<=180)
-        painter.translate(
-                (h+1)*qSin(qDegreesToRadians(static_cast<float>(fi)))-
-                (w+1)*qCos(qDegreesToRadians(static_cast<float>(fi))),
-                -(h+1)*qCos(qDegreesToRadians(static_cast<float>(fi))));
+    painter.translate(s/2+
+                      -w/2*qCos(qDegreesToRadians(static_cast<float>(fi)))+
+                      h/2*qSin(qDegreesToRadians(static_cast<float>(fi))),
+                      s/2+
+                      -w/2*qSin(qDegreesToRadians(static_cast<float>(fi)))-
+                      h/2*qCos(qDegreesToRadians(static_cast<float>(fi))));
     painter.rotate(fi);
 
     painter.drawLine(w, 0, w, h-b);                   // A
@@ -792,106 +959,18 @@ void Figure2::paintEvent(QPaintEvent* event) {
     painter.drawLine(w/2+e/2, 0, w, 0);               // A
 
 }
-void Figure2::contextMenuEvent(QContextMenuEvent* e) {
-    if(collidingWithBox(e->pos()))
-        _FigureMenu->exec(e->globalPos());
-    else
-        emit contextMenuSgn(e);
+bool Figure2::collidingWithDot(QPoint p) {
+    return collidingWithDot(p.x(), p.y());
 }
+bool Figure2::collidingWithDot(int x, int y) {
+    float radfi = qDegreesToRadians(static_cast<float>(fi));
+    x -= s/2+-w/2*qCos(radfi)+h/2*qSin(radfi);
+    y -= s/2+ -w/2*qSin(radfi)-h/2*qCos(radfi);
+    int t = x*qCos(radfi)+y*qSin(radfi);
+    y = -x*qSin(radfi)+y*qCos(radfi);
+    x = t;
 
-void Figure2::mousePressEvent(QMouseEvent* e) {
-    if(collidingWithBox(e->pos())) {
-        if(e->button()==Qt::LeftButton) {
-            selected = true;
-            emit selectedSgn(this);
-            if(not blocked) {
-                lmHolds = true;
-                emit moveSgn(this,
-                     e->pos().x()
-                     -w/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                     -h/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))),
-                     e->pos().y()
-                     -h/2*abs(qCos(qDegreesToRadians(static_cast<float>(fi))))
-                     -w/2*abs(qSin(qDegreesToRadians(static_cast<float>(fi)))));
-            }
-        }
-        update();
-    }
-    else
-        emit mousePressSgn(e);
-}
-bool Figure2::collidingWithBox(QPoint p) {
-    return collidingWithBox(p.x(), p.y());
-}
-bool Figure2::collidingWithBox(int x, int y) {
-    // некоторые условия здесь можно убрать, но мб потом
-    if(fi>-180 and fi<-90) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y>x*k-h*qCos(radfi) or //y1
-           y<-x/k-h*qCos(radfi) or //y2
-           y<x*k+h*qSin(radfi)*k or //y3
-           y>-x/k-w*qSin(radfi)-(w*qCos(radfi)+h*qSin(radfi))/k) //y4
-            return false;
-        x -= -w*qCos(radfi);
-        y -= -w*qSin(radfi)-h*qCos(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else if(fi==-90) {
-        return collidingWith(-y+w, x);
-    }
-    else if(fi>-90 and fi<0) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y<x*k-w*qSin(radfi) or //y1
-           y<-x/k+w*qCos(radfi)/k or //y2
-           y>x*k+h*qCos(radfi)-(w*qCos(radfi)-h*qSin(radfi))*k or //y3
-           y>-x/k-w*qSin(radfi))
-            return false;
-        y -= -w*qSin(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else if(fi==0) {
-        return collidingWith(x, y);
-    }
-    else if(fi>0 and fi<90) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y<x*k-h*qSin(radfi)*k or //y1
-           y>-x/k+w*qSin(radfi)+(h*qSin(radfi)+w*qCos(radfi))/k or //y2
-           y>x*k+h*qCos(radfi) or //y3
-           y<-x/k+h*qCos(radfi)) //y4
-            return false;
-        x -= h*qSin(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else if(fi==90) {
-        return collidingWith(y, -x+h);
-    }
-    else if(fi>90 and fi<180) {
-        float radfi = qDegreesToRadians(static_cast<float>(fi));
-        float k = qTan(radfi);
-        if(y>x*k-h*qCos(radfi)-(h*qSin(radfi)-w*qCos(radfi))*k or //y1
-           y>-x/k+w*qSin(radfi) or //y2
-           y<x*k+w*qSin(radfi) or //y3
-           y<-x/k-w*qCos(radfi)/k) //y4
-            return false;
-        x -= h*qSin(radfi)-w*qCos(radfi);
-        y -= -h*qCos(radfi);
-        return collidingWith(x*qCos(radfi)+y*qSin(radfi),
-                             -x*qSin(radfi)+y*qCos(radfi));
-    }
-    else { // fi == +-180
-        return collidingWith(w-x, h-y);
-    }
-}
-bool Figure2::collidingWith(QPoint p) {
-    return collidingWith(p.x(), p.y());
-}
-bool Figure2::collidingWith(int x, int y) {
+
     if(x<0 or y<0 or x>w or y>h)
         return false;
     if(x<d and y<d) { // D
@@ -922,43 +1001,62 @@ bool Figure2::collidingWith(int x, int y) {
 }
 
 bool figuresColliding(Figure* f1, Figure* f2, int dx, int dy) {
-    if(f1->getForm()) {  // 2
-        if(f2->getForm()) { // 2
-            return figuresColliding(dynamic_cast<Figure2*>(f1),
-                                    dynamic_cast<Figure2*>(f2),
-                                    dx, dy) or
-                   figuresColliding(dynamic_cast<Figure2*>(f2),
-                                    dynamic_cast<Figure2*>(f1),
-                                    -dx, -dy);
+    if(f2->getForm()) {  // 2
+        int ix[] = {
+               f2->d, f2->w/2-f2->e/2, f2->w/2+f2->e/2, f2->w,
+               static_cast<int>(0.61731656*f2->d), // ободок
+              static_cast<int>(0.29289321*f2->d),
+             static_cast<int>(0.07612046*f2->d),
+            0,
+            0,                                                      f2->w,
+               f2->c, f2->w/2-f2->f/2, f2->w/2+f2->f/2, f2->w-f2->b
+        };
+        int iy[] = {
+                      0,     0,     0,     0,
+            static_cast<int>(0.07612046*f2->d), // ободок
+           static_cast<int>(0.29289321*f2->d),
+          static_cast<int>(0.61731656*f2->d),
+         f2->d,
+         f2->h-f2->c,                             f2->h-f2->b,
+                      f2->h, f2->h, f2->h, f2->h
+        };
+        float radfi = qDegreesToRadians(static_cast<float>(f2->fi));
+        int addx = f2->s/2-f2->w/2*qCos(radfi)+f2->h/2*qSin(radfi);
+        int addy = f2->s/2-f2->w/2*qSin(radfi)-f2->h/2*qCos(radfi);
+        for(int i=0; i<14; ++i) {
+            if(f1->collidingWithDot(
+                      ix[i]*qCos(radfi)-iy[i]*qSin(radfi) - dx + addx,
+                      ix[i]*qSin(radfi)+iy[i]*qCos(radfi) - dy + addy))
+                return true;
         }
-        else { // 1
-          return figuresColliding(dynamic_cast<Figure2*>(f1),
-                                  dynamic_cast<Figure1*>(f2),
-                                  dx, dy) or
-                 figuresColliding(dynamic_cast<Figure1*>(f2),
-                                  dynamic_cast<Figure2*>(f1),
-                                  -dx, -dy);
-        }
-      }
+        return false;
+    }
     else { // 1
-      if(f2->getForm()) { // 2
-          return figuresColliding(dynamic_cast<Figure1*>(f1),
-                                  dynamic_cast<Figure2*>(f2),
-                                  dx, dy) or
-                 figuresColliding(dynamic_cast<Figure2*>(f2),
-                                  dynamic_cast<Figure1*>(f1),
-                                  -dx, -dy);
-      }
-      else { // 1
-        return figuresColliding(dynamic_cast<Figure1*>(f1),
-                                dynamic_cast<Figure1*>(f2),
-                                dx, dy) or
-               figuresColliding(dynamic_cast<Figure1*>(f2),
-                                dynamic_cast<Figure1*>(f1),
-                                -dx, -dy);
-      }
+        int ix[] = {
+               f2->d,                                   f2->w-f2->a,
+            0,                                                       f2->w,
+            0,                                                       f2->w,
+               f2->c, f2->w/2-f2->f/2, f2->w/2+f2->f/2, f2->w-f2->b
+        };
+        int iy[] = {
+                   0,                             0,
+            f2->d,                                   f2->a,
+            f2->h-f2->c,                             f2->h-f2->b,
+                         f2->h, f2->h, f2->h, f2->h
+        };
+        float radfi = qDegreesToRadians(static_cast<float>(f2->fi));
+        int addx = f2->s/2-f2->w/2*qCos(radfi)+f2->h/2*qSin(radfi);
+        int addy = f2->s/2-f2->w/2*qSin(radfi)-f2->h/2*qCos(radfi);
+        for(int i=0; i<10; ++i) {
+            if(f1->collidingWithDot(
+                      ix[i]*qCos(radfi)-iy[i]*qSin(radfi) - dx + addx,
+                      ix[i]*qSin(radfi)+iy[i]*qCos(radfi) - dy + addy))
+                return true;
+        }
+        return false;
     }
 }
+/*
 bool figuresColliding(Figure1* f1, Figure1* f2, int dx, int dy) {
     // aka f1.collidingWith(f2.dots());
     int ix[] = {
@@ -1173,4 +1271,4 @@ bool figuresColliding(Figure2* f1, Figure1* f2, int dx, int dy) {
     }
     return false;
 }
-
+*/
