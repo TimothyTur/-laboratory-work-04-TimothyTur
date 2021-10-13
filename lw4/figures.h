@@ -89,7 +89,6 @@ public:
 
     void deselect();
     bool isSelected();
-    //int getFi();
     virtual bool getForm() = 0;
     bool isBlocked();
     void block();
@@ -103,7 +102,6 @@ public:
     friend bool figuresColliding(Figure*, Figure*, int, int);
 
 protected:
-    //void paintEvent(QPaintEvent* e); // на перегрузки
     void contextMenuEvent(QContextMenuEvent* e);
     void mousePressEvent(QMouseEvent* e);
     void mouseReleaseEvent(QMouseEvent* e);
@@ -121,8 +119,6 @@ protected:
     EditDialog* _EditDialog;
     RotateDialog* _RotateDialog;
     bool blocked;
-
-    //int dx, dy;
 
 private slots:
     void deleteFigure();
@@ -185,11 +181,5 @@ protected:
     bool collidingWithDot(QPoint p);
     bool collidingWithDot(int x, int y);
 };
-
-
-//bool figuresColliding(Figure1*, Figure1*);
-//bool figuresColliding(Figure2*, Figure2*);
-//bool figuresColliding(Figure1*, Figure2*);
-//bool figuresColliding(Figure2*, Figure1*);
 
 #endif // FIGURES_H

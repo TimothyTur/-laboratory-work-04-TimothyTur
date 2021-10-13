@@ -37,52 +37,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     toolbarH = menuBar()->height();
     setFixedSize(800, 622);
-
-    /*
-    Figure1* f1 = new Figure1(this);
-    f1->move(25, 23); // +225, +180
-    Figure1* f2 = new Figure1(this);
-    f2->move(250, 23);
-    Figure1* f3 = new Figure1(this);
-    f3->move(475, 23);
-    Figure1* f4 = new Figure1(this);
-    f4->move(25, 205);
-    //f5
-    Figure2* f6 = new Figure2(this);
-    f6->move(475, 205);
-    Figure2* f7 = new Figure2(this);
-    f7->move(25, 385);
-    Figure2* f8 = new Figure2(this);
-    f8->move(250, 385);
-    Figure2* f9 = new Figure2(this);
-    f9->move(475, 385);
-
-    figures.push_back(f1);
-    figures.push_back(f2);
-    figures.push_back(f3);
-    figures.push_back(f4);
-    //figures.push_back(f5);
-    figures.push_back(f6);
-    figures.push_back(f7);
-    figures.push_back(f8);
-    figures.push_back(f9);
-    for(size_t i=0; i<figures.size(); ++i) {
-        connect(figures[i], SIGNAL(selectedSgn(Figure*)),
-                this, SLOT(deselect(Figure*)));
-        connect(figures[i], SIGNAL(moveSgn(Figure*,int,int)),
-                this, SLOT(moveFigure(Figure*,int,int)));
-        connect(figures[i], SIGNAL(delSgn(Figure*)),
-                this, SLOT(delSingle(Figure*)));
-    }
-    */
 }
 
 MainWindow::~MainWindow() {}
 
 //protected:
 void MainWindow::contextMenuEvent(QContextMenuEvent* event) {
-    //additional:
-    //    show BackgroundMenu
     _BackgroundMenu->exec(event->globalPos());
 }
 void MainWindow::mousePressEvent(QMouseEvent* event) {
@@ -90,16 +50,6 @@ void MainWindow::mousePressEvent(QMouseEvent* event) {
         deselect(nullptr);
         _ActionDelete->setEnabled(false);
     }
-}
-void MainWindow::mouseMoveEvent(QMouseEvent* e) {
-    /*
-    for(size_t i=0; i<figures.size(); ++i) {
-        if(figures[i]->hasMouseTracking())
-            moveFigure(figures[i],
-                       e->pos().x()-figures[i]->geometry().left(),
-                       e->pos().y()-figures[i]->geometry().top());
-    }
-    */
 }
 
 //private slots:

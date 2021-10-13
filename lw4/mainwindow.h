@@ -25,7 +25,6 @@ public:
 protected:
     void contextMenuEvent(QContextMenuEvent* e);
     void mousePressEvent(QMouseEvent* e);
-    void mouseMoveEvent(QMouseEvent* e);
 
 private slots:
     void deselect(Figure* figure);
@@ -51,12 +50,8 @@ private:
     QAction* _ActionDeleteAll;
     QAction* _ActionDeleteColliding;
     QAction* _ActionFitAll;
-    //QMenu* _FigureMenu; // хрень реализации, но так заметно проще
     QVector<Figure*> figures;
     char selected;
     int toolbarH;
-
-
-
 };
 #endif // MAINWINDOW_H

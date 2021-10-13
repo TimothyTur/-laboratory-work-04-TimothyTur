@@ -24,7 +24,6 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
     , w(w), h(h), a(a), b(b), c(c), d(d), e(e), f(f), figureType(type)
 {
     setModal(true);
-    //setFixedSize(250, 250);
 
     wSpinBox = new QSpinBox;
     wSpinBox->setRange(20, 200);
@@ -94,7 +93,6 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
 
     acceptButton = new QPushButton(tr("&Accept"), this);
 
-    //connect
     connect(wSpinBox, SIGNAL(valueChanged(int)),
             this,     SLOT(wValueChanged(int)));
     connect(hSpinBox, SIGNAL(valueChanged(int)),
@@ -139,7 +137,6 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
     layout->addWidget(PLabel,  10, 0, 1, 2, Qt::AlignCenter);
     layout->addWidget(acceptButton, 11, 0, 2, 2);
     setLayout(layout);
-
 
     setFixedSize(aLabel->width(),
                  aLabel->height());
@@ -415,7 +412,9 @@ void Figure::deselect() {
 bool Figure::isSelected() {
     return selected;
 }
-bool Figure::isBlocked() {return blocked;}
+bool Figure::isBlocked() {
+    return blocked;
+}
 void Figure::block() {
     blocked = true;
     lmHolds = false;
@@ -547,7 +546,9 @@ Figure1::Figure1(QWidget *parent) : Figure(parent) {
     _EditDialog = new EditDialog(w, h, a, b, c, d, e, f, fi, false, this);
     connect(_EditDialog, SIGNAL(accepted()), this, SLOT(figureChanged()));
 }
-bool Figure1::getForm() {return false;}
+bool Figure1::getForm() {
+    return false;
+}
 int Figure1::top() {
     int ix[] = {
            d,                   w-a,
@@ -644,45 +645,10 @@ int Figure1::right() {
     }
     return maxx;
 }
+
 //protected:
 void Figure1::paintEvent(QPaintEvent* e) {
     QPainter painter(this);
-    /*
-    // для тестов
-    painter.setPen(Qt::red);
-    //painter.drawEllipse(dx, dy, 2, 2); // это был клик по фигуре в 0
-    painter.drawArc(w-a, -a, 2*a, 2*a, 180*16, 90*16); // A
-    painter.drawLine(w, a, w, h-b);
-    painter.drawArc(w-b, h-b, 2*b, 2*b, 90*16, 90*16); // B
-    painter.drawLine(w-b, h, w/2+f/2, h);
-    painter.drawArc(w/2-f/2, h-f/2, f, f, 0, 180*16);  // F
-    painter.drawLine(w/2-f/2, h, c, h);
-    painter.drawLine(c, h, 0, h-c);                    // C
-    painter.drawLine(0, h-c, 0, d);
-    painter.drawArc(-d, -d, 2*d, 2*d, 270*16, 90*16);  // D
-    painter.drawLine(d, 0, w-a, 0);                    // E
-    painter.drawEllipse(-1, -1, 2, 2);
-    painter.drawEllipse(s-2, -1, 2, 2);
-    painter.drawEllipse(-1, s-2, 2, 2);
-    painter.drawEllipse(s-2, s-2, 2, 2);
-    */
-    /* // остатки старого кода
-    painter.drawEllipse(-1, -1, 2, 2);
-    painter.drawEllipse(
-            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            -1, 2, 2);
-    painter.drawEllipse(-1,
-            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            2, 2);
-    painter.drawEllipse(
-            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            2, 2);
-    */
 
     if(selected)
         painter.setPen(Qt::blue);
@@ -886,49 +852,6 @@ int Figure2::right() {
 void Figure2::paintEvent(QPaintEvent* event) {
     QPainter painter(this);
 
-    /*// для тестов
-    painter.setPen(Qt::red);
-    //painter.drawEllipse(dx, dy, 2, 2); // это был клик по фигуре в 0
-    painter.drawLine(w, 0, w, h-b);                   // A
-    painter.drawLine(w,    h-b, w-b, h-b);            // B
-    painter.drawLine(w-b, h-b, w-b, h   );            // B
-    painter.drawLine(w-b, h, w/2+f/2, h);
-    painter.drawLine(w/2+f/2, h,     w/2+f/2, h-f/2); // F
-    painter.drawLine(w/2+f/2, h-f/2, w/2-f/2, h-f/2); // F
-    painter.drawLine(w/2-f/2, h-f/2, w/2-f/2, h    ); // F
-    painter.drawLine(w/2-f/2, h, c, h);
-    painter.drawArc(-c, h-c, 2*c, 2*c, 0, 90*16);     // C
-    painter.drawLine(0, h-c, 0, d);
-    painter.drawArc(0, 0, 2*d, 2*d, 90*16, 90*16);    // D
-    painter.drawLine(d, 0, w/2-e/2, 0);
-    painter.drawLine(w/2-e/2, 0,   w/2-e/2, e/2);     // E
-    painter.drawLine(w/2-e/2, e/2, w/2+e/2, e/2);     // E
-    painter.drawLine(w/2+e/2, e/2, w/2+e/2, 0  );     // E
-    painter.drawLine(w/2+e/2, 0, w, 0);               // A
-
-    painter.drawEllipse(-1, -1, 2, 2);
-    painter.drawEllipse(s-2, -1, 2, 2);
-    painter.drawEllipse(-1, s-2, 2, 2);
-    painter.drawEllipse(s-2, s-2, 2, 2);
-    */
-    /*
-    painter.drawEllipse(-1, -1, 2, 2);
-    painter.drawEllipse(
-            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            -1, 2, 2);
-    painter.drawEllipse(-1,
-            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            2, 2);
-    painter.drawEllipse(
-            (w+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (h+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            (h+1)*abs(qCos(qDegreesToRadians(static_cast<float>(-fi))))+
-            (w+1)*abs(qSin(qDegreesToRadians(static_cast<float>(-fi))))-1,
-            2, 2);
-    */
-
     if(selected)
         painter.setPen(Qt::blue);
     else
@@ -1056,219 +979,3 @@ bool figuresColliding(Figure* f1, Figure* f2, int dx, int dy) {
         return false;
     }
 }
-/*
-bool figuresColliding(Figure1* f1, Figure1* f2, int dx, int dy) {
-    // aka f1.collidingWith(f2.dots());
-    int ix[] = {
-           f2->d,                                   f2->w-f2->a,
-        0,                                                       f2->w,
-        0,                                                       f2->w,
-           f2->c, f2->w/2-f2->f/2, f2->w/2+f2->f/2, f2->w-f2->b
-    };
-    int iy[] = {
-               0,                             0,
-        f2->d,                                   f2->a,
-        f2->h-f2->c,                             f2->h-f2->b,
-                     f2->h, f2->h, f2->h, f2->h
-    };
-    float radfi = qDegreesToRadians(static_cast<float>(f2->fi));
-    int addx = 0, addy = 0;
-    if(f2->fi>-180 and f2->fi < -90) {
-        addx = -f2->w*qCos(radfi);
-        addy = -f2->w*qSin(radfi)-f2->h*qCos(radfi);
-    }
-    else if(f2->fi == -90) {
-        addy = f2->w;
-    }
-    else if(f2->fi>-90 and f2->fi<0) {
-        addy = -f2->w*qSin(radfi);
-    }
-    //else if (f2->fi==0) {
-    //
-    //}
-    else if(f2->fi>0 and f2->fi<90) {
-        addx = f2->h*qCos(radfi);
-    }
-    else if(f2->fi == 90) {
-        addx = f2->h;
-    }
-    else if(f2->fi>90 and f2->fi<180) {
-        addx = f2->h*qSin(radfi)-f2->w*qCos(radfi);
-        addy = -f2->h*qCos(radfi);
-    }
-    else { // +-180
-        addx = f2->w;
-        addy = f2->h;
-    }
-    for(int i=0; i<10; ++i) {
-        if(f1->collidingWithBox(
-                  ix[i]*qCos(radfi)-iy[i]*qSin(radfi) - dx + addx,
-                  ix[i]*qSin(radfi)+iy[i]*qCos(radfi)- dy + addy))
-            return true;
-    }
-    return false;
-}
-bool figuresColliding(Figure2* f1, Figure2* f2, int dx, int dy) {
-    int ix[] = {
-           f2->d, f2->w/2-f2->e/2, f2->w/2+f2->e/2, f2->w,
-           static_cast<int>(0.61731656*f2->d), // ободок
-          static_cast<int>(0.29289321*f2->d),
-         static_cast<int>(0.07612046*f2->d),
-        0,
-        0,                                                      f2->w,
-           f2->c, f2->w/2-f2->f/2, f2->w/2+f2->f/2, f2->w-f2->b
-    };
-    int iy[] = {
-                  0,     0,     0,     0,
-        static_cast<int>(0.07612046*f2->d), // ободок
-       static_cast<int>(0.29289321*f2->d),
-      static_cast<int>(0.61731656*f2->d),
-     f2->d,
-     f2->h-f2->c,                             f2->h-f2->b,
-                  f2->h, f2->h, f2->h, f2->h
-    };
-    float radfi = qDegreesToRadians(static_cast<float>(f2->fi));
-    int addx = 0, addy = 0;
-    if(f2->fi>-180 and f2->fi < -90) {
-        addx = -f2->w*qCos(radfi);
-        addy = -f2->w*qSin(radfi)-f2->h*qCos(radfi);
-    }
-    else if(f2->fi == -90) {
-        addy = f2->w;
-    }
-    else if(f2->fi>-90 and f2->fi<0) {
-        addy = -f2->w*qSin(radfi);
-    }
-    //else if (f2->fi==0) {
-    //
-    //}
-    else if(f2->fi>0 and f2->fi<90) {
-        addx = f2->h*qCos(radfi);
-    }
-    else if(f2->fi == 90) {
-        addx = f2->h;
-    }
-    else if(f2->fi>90 and f2->fi<180) {
-        addx = f2->h*qSin(radfi)-f2->w*qCos(radfi);
-        addy = -f2->h*qCos(radfi);
-    }
-    else { // +-180
-        addx = f2->w;
-        addy = f2->h;
-    }
-    for(int i=0; i<14; ++i) {
-        if(f1->collidingWithBox(
-                  ix[i]*qCos(radfi)-iy[i]*qSin(radfi) - dx + addx,
-                  ix[i]*qSin(radfi)+iy[i]*qCos(radfi)- dy + addy))
-            return true;
-    }
-    return false;
-}
-bool figuresColliding(Figure1* f1, Figure2* f2, int dx, int dy) {
-    int ix[] = {
-           f2->d, f2->w/2-f2->e/2, f2->w/2+f2->e/2, f2->w,
-           static_cast<int>(0.61731656*f2->d), // ободок
-          static_cast<int>(0.29289321*f2->d),
-         static_cast<int>(0.07612046*f2->d),
-        0,
-        0,                                                      f2->w,
-           f2->c, f2->w/2-f2->f/2, f2->w/2+f2->f/2, f2->w-f2->b
-    };
-    int iy[] = {
-                  0,     0,     0,     0,
-        static_cast<int>(0.07612046*f2->d), // ободок
-       static_cast<int>(0.29289321*f2->d),
-      static_cast<int>(0.61731656*f2->d),
-     f2->d,
-     f2->h-f2->c,                             f2->h-f2->b,
-                  f2->h, f2->h, f2->h, f2->h
-    };
-    float radfi = qDegreesToRadians(static_cast<float>(f2->fi));
-    int addx = 0, addy = 0;
-    if(f2->fi>-180 and f2->fi < -90) {
-        addx = -f2->w*qCos(radfi);
-        addy = -f2->w*qSin(radfi)-f2->h*qCos(radfi);
-    }
-    else if(f2->fi == -90) {
-        addy = f2->w;
-    }
-    else if(f2->fi>-90 and f2->fi<0) {
-        addy = -f2->w*qSin(radfi);
-    }
-    //else if (f2->fi==0) {
-    //
-    //}
-    else if(f2->fi>0 and f2->fi<90) {
-        addx = f2->h*qCos(radfi);
-    }
-    else if(f2->fi == 90) {
-        addx = f2->h;
-    }
-    else if(f2->fi>90 and f2->fi<180) {
-        addx = f2->h*qSin(radfi)-f2->w*qCos(radfi);
-        addy = -f2->h*qCos(radfi);
-    }
-    else { // +-180
-        addx = f2->w;
-        addy = f2->h;
-    }
-    for(int i=0; i<14; ++i) {
-        if(f1->collidingWithBox(
-                  ix[i]*qCos(radfi)-iy[i]*qSin(radfi) - dx + addx,
-                  ix[i]*qSin(radfi)+iy[i]*qCos(radfi)- dy + addy))
-            return true;
-    }
-    return false;
-}
-bool figuresColliding(Figure2* f1, Figure1* f2, int dx, int dy) {
-    // aka f1.collidingWith(f2.dots());
-    int ix[] = {
-           f2->d,                                   f2->w-f2->a,
-        0,                                                       f2->w,
-        0,                                                       f2->w,
-           f2->c, f2->w/2-f2->f/2, f2->w/2+f2->f/2, f2->w-f2->b
-    };
-    int iy[] = {
-               0,                             0,
-        f2->d,                                   f2->a,
-        f2->h-f2->c,                             f2->h-f2->b,
-                     f2->h, f2->h, f2->h, f2->h
-    };
-    float radfi = qDegreesToRadians(static_cast<float>(f2->fi));
-    int addx = 0, addy = 0;
-    if(f2->fi>-180 and f2->fi < -90) {
-        addx = -f2->w*qCos(radfi);
-        addy = -f2->w*qSin(radfi)-f2->h*qCos(radfi);
-    }
-    else if(f2->fi == -90) {
-        addy = f2->w;
-    }
-    else if(f2->fi>-90 and f2->fi<0) {
-        addy = -f2->w*qSin(radfi);
-    }
-    //else if (f2->fi==0) {
-    //
-    //}
-    else if(f2->fi>0 and f2->fi<90) {
-        addx = f2->h*qCos(radfi);
-    }
-    else if(f2->fi == 90) {
-        addx = f2->h;
-    }
-    else if(f2->fi>90 and f2->fi<180) {
-        addx = f2->h*qSin(radfi)-f2->w*qCos(radfi);
-        addy = -f2->h*qCos(radfi);
-    }
-    else { // +-180
-        addx = f2->w;
-        addy = f2->h;
-    }
-    for(int i=0; i<10; ++i) {
-        if(f1->collidingWithBox(
-                  ix[i]*qCos(radfi)-iy[i]*qSin(radfi) - dx + addx,
-                  ix[i]*qSin(radfi)+iy[i]*qCos(radfi)- dy + addy))
-            return true;
-    }
-    return false;
-}
-*/
