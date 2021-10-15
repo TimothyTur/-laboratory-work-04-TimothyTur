@@ -28,55 +28,55 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
     wSpinBox = new QSpinBox;
     wSpinBox->setRange(20, 200);
     wSpinBox->setValue(w);
-    wLabel = new QLabel(tr("&Width:"));
+    wLabel = new QLabel(tr("&Ширина:"));
     wLabel->setBuddy(wSpinBox);
 
     hSpinBox = new QSpinBox;
     hSpinBox->setRange(w/3, w);
     hSpinBox->setValue(h);
-    hLabel = new QLabel(tr("&Height:"));
+    hLabel = new QLabel(tr("&Высота:"));
     hLabel->setBuddy(hSpinBox);
 
     aSpinBox = new QSpinBox;
     aSpinBox->setRange(0, h/3);
     aSpinBox->setValue(a);
-    aLabel = new QLabel(tr("&A Size:"));
+    aLabel = new QLabel(tr("&Правый верхний угол:"));
     aLabel->setBuddy(aSpinBox);
 
     bSpinBox = new QSpinBox;
     bSpinBox->setRange(0, h/3);
     bSpinBox->setValue(b);
-    bLabel = new QLabel(tr("&B Size:"));
+    bLabel = new QLabel(tr("&Правый нижний угол:"));
     bLabel->setBuddy(bSpinBox);
 
     cSpinBox = new QSpinBox;
     cSpinBox->setRange(0, h/3);
     cSpinBox->setValue(c);
-    cLabel = new QLabel(tr("&C Size:"));
+    cLabel = new QLabel(tr("&Левый нижний угол:"));
     cLabel->setBuddy(cSpinBox);
 
     dSpinBox = new QSpinBox;
     dSpinBox->setRange(0, h/3);
     dSpinBox->setValue(d);
-    dLabel = new QLabel(tr("&D Size:"));
+    dLabel = new QLabel(tr("&Левый верхний угол:"));
     dLabel->setBuddy(dSpinBox);
 
     eSpinBox = new QSpinBox;
     eSpinBox->setRange(0, w/4);
     eSpinBox->setValue(e);
-    eLabel = new QLabel(tr("&E Size:"));
+    eLabel = new QLabel(tr("&Верх:"));
     eLabel->setBuddy(eSpinBox);
 
     fSpinBox = new QSpinBox;
     fSpinBox->setRange(0, w/4);
     fSpinBox->setValue(f);
-    fLabel = new QLabel(tr("&F Size:"));
+    fLabel = new QLabel(tr("&Низ:"));
     fLabel->setBuddy(fSpinBox);
 
     fiSpinBox = new QSpinBox;
     fiSpinBox->setRange(-180, 180);
     fiSpinBox->setValue(-fi);
-    fiLabel = new QLabel(tr("&Fi Degree:"));
+    fiLabel = new QLabel(tr("&Угол:"));
     fiLabel->setBuddy(fiSpinBox);
 
     if(figureType) {// 2
@@ -88,10 +88,10 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
 
-    SLabel = new QLabel(tr("S : ")+QString::number(S));
-    PLabel = new QLabel(tr("P : ")+QString::number(P));
+    SLabel = new QLabel(tr("Площадь : ")+QString::number(S));
+    PLabel = new QLabel(tr("Периметр : ")+QString::number(P));
 
-    acceptButton = new QPushButton(tr("&Accept"), this);
+    acceptButton = new QPushButton(tr("&Принять"), this);
 
     connect(wSpinBox, SIGNAL(valueChanged(int)),
             this,     SLOT(wValueChanged(int)));
@@ -141,7 +141,7 @@ EditDialog::EditDialog(int w, int h, int a, int b, int c, int d, int e, int f,
     setFixedSize(aLabel->width(),
                  aLabel->height());
 
-    setWindowTitle(tr("Edit Figure"));
+    setWindowTitle(tr("Изменение фигуры"));
 }
 
 int EditDialog::getw() {return w;}
@@ -213,8 +213,8 @@ void EditDialog::wValueChanged(int val) {
             S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
             P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
         }
-        SLabel->setText(tr("S : ")+QString::number(S));
-        PLabel->setText(tr("P : ")+QString::number(P));
+        SLabel->setText(tr("Площадь : ")+QString::number(S));
+        PLabel->setText(tr("Периметр : ")+QString::number(P));
     }
 }
 void EditDialog::hValueChanged(int val) {
@@ -240,8 +240,8 @@ void EditDialog::hValueChanged(int val) {
             S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
             P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
         }
-        SLabel->setText(tr("S : ")+QString::number(S));
-        PLabel->setText(tr("P : ")+QString::number(P));
+        SLabel->setText(tr("Площадь : ")+QString::number(S));
+        PLabel->setText(tr("Периметр : ")+QString::number(P));
     }
 }
 void EditDialog::aValueChanged(int val) {
@@ -254,8 +254,8 @@ void EditDialog::aValueChanged(int val) {
         S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
-    SLabel->setText(tr("S : ")+QString::number(S));
-    PLabel->setText(tr("P : ")+QString::number(P));
+    SLabel->setText(tr("Площадь : ")+QString::number(S));
+    PLabel->setText(tr("Периметр : ")+QString::number(P));
 }
 void EditDialog::bValueChanged(int val) {
     b = val;
@@ -267,8 +267,8 @@ void EditDialog::bValueChanged(int val) {
         S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
-    SLabel->setText(tr("S : ")+QString::number(S));
-    PLabel->setText(tr("P : ")+QString::number(P));
+    SLabel->setText(tr("Площадь : ")+QString::number(S));
+    PLabel->setText(tr("Периметр : ")+QString::number(P));
 }
 void EditDialog::cValueChanged(int val) {
     c = val;
@@ -280,8 +280,8 @@ void EditDialog::cValueChanged(int val) {
         S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
-    SLabel->setText(tr("S : ")+QString::number(S));
-    PLabel->setText(tr("P : ")+QString::number(P));
+    SLabel->setText(tr("Площадь : ")+QString::number(S));
+    PLabel->setText(tr("Периметр : ")+QString::number(P));
 }
 void EditDialog::dValueChanged(int val) {
     d = val;
@@ -293,8 +293,8 @@ void EditDialog::dValueChanged(int val) {
         S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
-    SLabel->setText(tr("S : ")+QString::number(S));
-    PLabel->setText(tr("P : ")+QString::number(P));
+    SLabel->setText(tr("Площадь : ")+QString::number(S));
+    PLabel->setText(tr("Периметр : ")+QString::number(P));
 }
 void EditDialog::eValueChanged(int val) {
     e = val;
@@ -306,8 +306,8 @@ void EditDialog::eValueChanged(int val) {
         S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
-    SLabel->setText(tr("S : ")+QString::number(S));
-    PLabel->setText(tr("P : ")+QString::number(P));
+    SLabel->setText(tr("Площадь : ")+QString::number(S));
+    PLabel->setText(tr("Периметр : ")+QString::number(P));
 }
 void EditDialog::fValueChanged(int val) {
     f = val;
@@ -319,20 +319,20 @@ void EditDialog::fValueChanged(int val) {
         S = w*h-0.785375*a*a-0.785375*b*b-1.57075*f*f-c*c/2-0.785375*d*d;
         P = 2*h+2*w-0.42925*(a+b+d)+0.57075*f-0.585786*c;
     }
-    SLabel->setText(tr("S : ")+QString::number(S));
-    PLabel->setText(tr("P : ")+QString::number(P));
+    SLabel->setText(tr("Площадь : ")+QString::number(S));
+    PLabel->setText(tr("Периметр : ")+QString::number(P));
 }
 void EditDialog::fiValueChanged(int val) {
     fi = -val;
 }
 
 //RotateDialog
-RotateDialog::RotateDialog(int& fi, QWidget* parent)
+RotateDialog::RotateDialog(int fi, QWidget* parent)
     : QDialog(parent)
 {
     setModal(true);
     setFixedSize(200, 200);
-    setWindowTitle(tr("Rotate Figure"));
+    setWindowTitle(tr("Поворот фигуры"));
 
     fiDial = new QDial(this);
     fiDial->setFocusPolicy(Qt::StrongFocus);
@@ -341,10 +341,10 @@ RotateDialog::RotateDialog(int& fi, QWidget* parent)
     fiDial->setValue(fi);
     fiDial->setFixedSize(100, 100);
 
-    fiLabel = new QLabel(tr("&Degree"));
+    fiLabel = new QLabel(tr("&Угол"));
     fiLabel->setBuddy(fiDial);
 
-    acceptButton = new QPushButton(tr("&Accept"), this);
+    acceptButton = new QPushButton(tr("&Принять"), this);
     connect(acceptButton, SIGNAL(clicked()),
             this,         SLOT(accept()));
 
@@ -388,16 +388,16 @@ Figure::Figure(QWidget *parent)
 {
     setFixedSize(s, s);
     _FigureMenu = new QMenu(this);
-    _ActionFigureDelete = _FigureMenu->addAction(tr("Delete"),
+    _ActionFigureDelete = _FigureMenu->addAction(tr("Удалить"),
                                                  this,
                                                  SLOT(deleteFigure()));
-    _ActionFigureEdit = _FigureMenu->addAction(tr("Edit"),
+    _ActionFigureEdit = _FigureMenu->addAction(tr("Изменить"),
                                                  this,
                                                  SLOT(showFigureEdit()));
-    _ActionFigureMove = _FigureMenu->addAction(tr("Move"),
+    _ActionFigureMove = _FigureMenu->addAction(tr("Переместить"),
                                                this,
                                                SLOT(startMoving()));
-    _ActionFigureRotate = _FigureMenu->addAction(tr("Rotate"),
+    _ActionFigureRotate = _FigureMenu->addAction(tr("Повернуть"),
                                                  this,
                                                  SLOT(showFigureRotate()));
     _RotateDialog = new RotateDialog(fi, this);

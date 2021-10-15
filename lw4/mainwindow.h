@@ -1,15 +1,7 @@
-/*
- * СКБ201 Тур лр4 17.10.21
- * Вариант 105 (позиция в рейтинге по алфавиту -1)
- * фигуры 55 и 60
- *
- */
-
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-
 #include <QVector>
 
 #include "figures.h"
@@ -52,6 +44,5 @@ private:
     QAction* _ActionFitAll;
     QVector<Figure*> figures;
     char selected;
-    int toolbarH;
 };
 #endif // MAINWINDOW_H

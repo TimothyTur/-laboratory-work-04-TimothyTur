@@ -32,7 +32,7 @@ private slots:
     void fiValueChanged(int val);
 
 private: // ыы
-    int w, h, s,
+    int w, h,
         a, b, c, d, e, f,
         fi;
     double S, P;
@@ -64,7 +64,7 @@ class RotateDialog : public QDialog
 {
     Q_OBJECT
 public:
-    RotateDialog(int& fi, QWidget* parent = nullptr);
+    RotateDialog(int fi, QWidget* parent = nullptr);
 
     int getFi();
     void setFi(int);

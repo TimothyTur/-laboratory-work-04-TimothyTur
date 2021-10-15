@@ -2,7 +2,6 @@
 #include "figures.h"
 
 #include <QMenuBar>
-#include <QCoreApplication>
 #include <QContextMenuEvent>
 #include <QRandomGenerator>
 
@@ -13,29 +12,28 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , selected(0)
 {
-    _ActionFigure1 = menuBar()->addAction(tr("&Figure 1"),
+    _ActionFigure1 = menuBar()->addAction(tr("&Фигура 1"),
                                           this, SLOT(select1()));
-    _ActionFigure2 = menuBar()->addAction(tr("&Figure 2"),
+    _ActionFigure2 = menuBar()->addAction(tr("&Фигура 2"),
                                           this, SLOT(select2()));
-    _ActionCreate = menuBar()->addAction(tr("&Create"),
+    _ActionCreate = menuBar()->addAction(tr("&Создать"),
                                           this, SLOT(create()));
-    _ActionDelete = menuBar()->addAction(tr("&Delete"),
+    _ActionDelete = menuBar()->addAction(tr("&Удалить"),
                                           this, SLOT(delSelected()));
     _ActionCreate->setEnabled(false);
     _ActionDelete->setEnabled(false);
 
     _BackgroundMenu = new QMenu(this);
     _ActionDeleteAll =
-            _BackgroundMenu->addAction(tr("&Delete All"),
+            _BackgroundMenu->addAction(tr("&Удалить все"),
                                        this, SLOT(delAll()));
     _ActionDeleteColliding =
-            _BackgroundMenu->addAction(tr("&Delete Colliding"),
+            _BackgroundMenu->addAction(tr("&Удалить пересекающиеся"),
                                        this, SLOT(delColliding()));
     _ActionFitAll =
-            _BackgroundMenu->addAction(tr("&Fit All Figures"),
+            _BackgroundMenu->addAction(tr("&Уместить"),
                                        this, SLOT(fit()));
-
-    toolbarH = menuBar()->height();
+    setWindowTitle(tr("Лабораторная работа №4"));
     setFixedSize(800, 622);
 }
 
