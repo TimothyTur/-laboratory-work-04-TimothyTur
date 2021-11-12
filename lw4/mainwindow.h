@@ -31,6 +31,7 @@ private slots:
     void delAll();
     void delColliding();
     void fit();
+    void chechCollisions(Figure*);
 
 private:
     QAction* _ActionFigure1;

@@ -140,6 +140,7 @@ signals:
     void delSgn(Figure*);
     void contextMenuSgn(QContextMenuEvent*);
     void mousePressSgn(QMouseEvent*);
+    void chechCollisionsSgn(Figure*);
 };
 
 // фигура 55: A3B3C2D3EF6

@@ -152,6 +152,8 @@ void MainWindow::create() {
             this, SLOT(callMousePress(QMouseEvent*)));
     connect(f, SIGNAL(contextMenuSgn(QContextMenuEvent*)),
             this, SLOT(callContextMenu(QContextMenuEvent*)));
+    connect(f, SIGNAL(chechCollisionsSgn(Figure*)),
+            this, SLOT(chechCollisions(Figure*)));
     figures.push_back(f);
 
     bool toCheck;
@@ -254,4 +256,52 @@ void MainWindow::fit() {
         }
     }
     update();
+}
+
+void MainWindow::chechCollisions(Figure* f) {
+    bool toUnblock = true;
+    bool toCheck;
+    // hadooken.begin();
+    for(int i=0; i<figures.size(); ++i) {
+      toCheck = false;
+      if(figures[i] != f) {
+        if(f->geometry().left()>figures[i]->geometry().left() and
+           f->geometry().left()<figures[i]->geometry().right()) {
+          if(f->geometry().top()>figures[i]->geometry().top() and
+             f->geometry().top()<figures[i]->geometry().bottom())
+            toCheck = true;
+          else if(
+             f->geometry().bottom()>figures[i]->geometry().top() and
+             f->geometry().bottom()<figures[i]->geometry().bottom())
+            toCheck = true;
+        }
+        else if(
+           f->geometry().right()>figures[i]->geometry().left() and
+           f->geometry().right()<figures[i]->geometry().right()) {
+          if(f->geometry().top()>figures[i]->geometry().top() and
+             f->geometry().top()<figures[i]->geometry().bottom())
+            toCheck = true;
+          else if(
+             f->geometry().bottom()>figures[i]->geometry().top() and
+             f->geometry().bottom()<figures[i]->geometry().bottom())
+            toCheck = true;
+        }
+        if(toCheck) {
+          if(figuresColliding(f, figures[i],
+                f->geometry().left()-figures[i]->geometry().left(),
+                f->geometry().top()-figures[i]->geometry().top()) or
+             figuresColliding(figures[i], f,
+                figures[i]->geometry().left()-f->geometry().left(),
+                figures[i]->geometry().top()-f->geometry().top())) {
+            f->block();
+            figures[i]->block();
+            toUnblock = false;
+          }
+        }
+      }
+    }
+    // hadooken.end();
+    if(toUnblock) {
+        f->unblock();
+    }
 }

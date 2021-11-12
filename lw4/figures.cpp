@@ -498,30 +498,29 @@ void Figure::showFigureEdit() {
     _EditDialog->exec();
 }
 void Figure::figureChanged() {
-    if(not blocked) {
-        w = _EditDialog->getw();
-        h = _EditDialog->geth();
-        a = _EditDialog->geta();
-        b = _EditDialog->getb();
-        c = _EditDialog->getc();
-        d = _EditDialog->getd();
-        e = _EditDialog->gete();
-        f = _EditDialog->getf();
-        fi = _EditDialog->getfi();
+    w = _EditDialog->getw();
+    h = _EditDialog->geth();
+    a = _EditDialog->geta();
+    b = _EditDialog->getb();
+    c = _EditDialog->getc();
+    d = _EditDialog->getd();
+    e = _EditDialog->gete();
+    f = _EditDialog->getf();
+    fi = _EditDialog->getfi();
 
-        int news = qSqrt(w*w+h*h);
-        setFixedSize(news, news);
-        emit moveSgn(this, (s-news)/2, (s-news)/2);
-        s = news;
+    int news = qSqrt(w*w+h*h);
+    setFixedSize(news, news);
+    emit moveSgn(this, (s-news)/2, (s-news)/2);
+    s = news;
 
-        update();
-    }
+    emit chechCollisionsSgn(this);
+
+    update();
 }
 void Figure::fiChanged(int val) {
-    if(not blocked) {
-        fi = val;
-        update();
-    }
+    fi = val;
+    emit chechCollisionsSgn(this);
+    update();
 }
 void Figure::startMoving() {
     if(not blocked) {
